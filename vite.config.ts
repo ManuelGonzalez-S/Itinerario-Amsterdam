@@ -2,8 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// base: el sitio se sirve en https://<user>.github.io/Itinerario-Amsterdam/
+// Se despliega en Vercel, que sirve el sitio en la raiz del dominio.
 export default defineConfig({
-  base: '/Itinerario-Amsterdam/',
+  base: '/',
   plugins: [react(), tailwindcss()],
 })

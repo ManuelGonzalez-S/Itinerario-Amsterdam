@@ -25,11 +25,8 @@ npm install
 npm run dev
 ```
 
-El sitio se publica solo en GitHub Pages con cada push a `main`
-(ver [.github/workflows/deploy.yml](.github/workflows/deploy.yml)).
-
-Para que Pages funcione, hay que activarlo una vez en
-**Settings → Pages → Source: GitHub Actions**.
+El sitio se despliega en **Vercel** con cada push a `main`. Vercel detecta Vite solo: build
+`npm run build`, carpeta de salida `dist`. No hace falta configurar nada más.
 
 ## Firebase
 
