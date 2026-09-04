@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: #020617;
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  /* Deja hueco para la barra inferior en móviles con notch. */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Fondo con un degradado sutil de canal nocturno. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(70rem 40rem at 15% -10%, rgba(249, 115, 22, 0.16), transparent 60%),
+    radial-gradient(60rem 36rem at 90% 0%, rgba(56, 189, 248, 0.14), transparent 60%);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Oculta la barra de scroll horizontal de los filtros sin perder el gesto. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

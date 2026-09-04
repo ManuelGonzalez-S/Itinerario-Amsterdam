@@ -1,0 +1,48 @@
+rules_version = '2';
+
+// Reglas de la votación del viaje a Ámsterdam.
+//
+// La app no tiene login: cualquiera con el enlace puede votar. Eso es
+// intencionado (somos cuatro amigos con un enlace privado), pero por eso las
+// reglas acotan mucho QUÉ se puede escribir, aunque no QUIÉN lo escribe:
+//
+//   - solo se puede escribir en trips/{tripId}/votes/{voterId}
+//   - un documento de voto solo admite los cinco campos esperados
+//   - los votos solo pueden valer 'yes', 'maybe' o 'no'
+//   - nadie puede borrar documentos
+//   - el resto de la base de datos está cerrada
+//
+// Publicar con:  firebase deploy --only firestore:rules
+// O pegando este contenido en Firebase Console > Firestore > Reglas.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Las funciones de Firestore Rules tienen que vivir dentro de un match.
+    function isValidVote(d) {
+      return d.keys().hasOnly(['name', 'emoji', 'triage', 'points', 'updatedAt'])
+        && d.keys().hasAll(['name', 'triage', 'points'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 40
+        && (!d.keys().hasAny(['emoji']) || (d.emoji is string && d.emoji.size() <= 8))
+        && d.triage is map && d.triage.size() <= 200
+        && d.points is map && d.points.size() <= 200
+        && (!d.keys().hasAny(['updatedAt']) || d.updatedAt is int)
+        && d.triage.values().hasOnly(['yes', 'maybe', 'no']);
+    }
+
+    match /trips/{tripId}/votes/{voterId} {
+      // Cualquiera con el enlace ve cómo va la votación.
+      allow read: if true;
+
+      allow create, update: if isValidVote(request.resource.data);
+
+      // Los votos no se borran, solo se cambian.
+      allow delete: if false;
+    }
+
+    // Todo lo demás, denegado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
