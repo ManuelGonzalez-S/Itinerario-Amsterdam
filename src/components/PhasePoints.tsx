@@ -53,7 +53,8 @@ export function PhasePoints({ mine, spent, onSetPoints, onReset, onGoTriage }: P
   return (
     <div className="space-y-4">
       <div
-        className={`sticky top-[3.75rem] z-10 rounded-2xl border p-4 backdrop-blur-md transition ${
+        // En móvil se pega bajo la cabecera; en escritorio no hay cabecera arriba.
+        className={`sticky top-[3.75rem] z-10 rounded-2xl border p-4 backdrop-blur-md transition lg:top-4 ${
           left < 0
             ? 'border-rose-500/40 bg-rose-950/70'
             : left === 0
@@ -98,7 +99,7 @@ export function PhasePoints({ mine, spent, onSetPoints, onReset, onGoTriage }: P
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="grid gap-2 xl:grid-cols-2">
         {shortlist.map((idea) => {
           const value = mine.points[idea.id] ?? 0
           const cat = CATEGORIES[idea.category]

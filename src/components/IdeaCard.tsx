@@ -34,7 +34,9 @@ export function IdeaCard({ tally, myVote, docs, onVote }: Props) {
 
   return (
     <article
-      className={`rounded-2xl border bg-slate-900/50 p-4 backdrop-blur transition ${
+      // flex + h-full deja los botones de voto alineados abajo cuando las
+      // tarjetas van en rejilla y tienen textos de distinta longitud.
+      className={`flex h-full flex-col rounded-2xl border bg-slate-900/50 p-4 backdrop-blur transition ${
         myVote ? 'border-white/10' : 'border-orange-400/25'
       }`}
     >
@@ -118,7 +120,7 @@ export function IdeaCard({ tally, myVote, docs, onVote }: Props) {
         </>
       )}
 
-      <div className="mt-3.5 grid grid-cols-3 gap-2">
+      <div className="mt-auto grid grid-cols-3 gap-2 pt-3.5">
         {VOTE_BUTTONS.map((b) => (
           <button
             key={b.vote}

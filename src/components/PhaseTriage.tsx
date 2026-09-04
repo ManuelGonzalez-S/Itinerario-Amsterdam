@@ -37,34 +37,39 @@ export function PhaseTriage({ tallies, mine, docs, onVote }: Props) {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <div className="flex items-baseline justify-between">
-          <p className="text-sm font-medium text-slate-300">
-            Has votado <span className="text-white">{voted}</span> de {total}
-          </p>
-          <p className="text-2xl font-bold text-orange-300">{pct}%</p>
+        {/* En escritorio el progreso ya vive en la barra lateral. */}
+        <div className="lg:hidden">
+          <div className="flex items-baseline justify-between">
+            <p className="text-sm font-medium text-slate-300">
+              Has votado <span className="text-white">{voted}</span> de {total}
+            </p>
+            <p className="text-2xl font-bold text-orange-300">{pct}%</p>
+          </div>
+          <div className="mt-2 mb-2.5 h-2 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-300 transition-all duration-300"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-300 transition-all duration-300"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <p className="mt-2.5 text-xs leading-relaxed text-slate-500">
+        <p className="text-xs leading-relaxed text-slate-500 lg:text-sm">
           Pasa por todas y marca sin pensarlo mucho. Un <strong className="text-rose-300">No</strong>{' '}
           es un veto real: lo que alguien no quiere, no se hace. Puedes cambiar tu voto cuando
           quieras.
         </p>
       </div>
 
-      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar">
-        <Chip active={category === 'todo'} onClick={() => setCategory('todo')}>
-          Todo ({total})
-        </Chip>
-        {CATEGORY_ORDER.map((c) => (
-          <Chip key={c} active={category === c} onClick={() => setCategory(c)}>
-            {CATEGORIES[c].emoji} {CATEGORIES[c].label}
+      <div className="flex items-center justify-between gap-4">
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+          <Chip active={category === 'todo'} onClick={() => setCategory('todo')}>
+            Todo ({total})
           </Chip>
-        ))}
+          {CATEGORY_ORDER.map((c) => (
+            <Chip key={c} active={category === c} onClick={() => setCategory(c)}>
+              {CATEGORIES[c].emoji} {CATEGORIES[c].label}
+            </Chip>
+          ))}
+        </div>
       </div>
 
       {pendingCount > 0 && (
@@ -79,7 +84,8 @@ export function PhaseTriage({ tallies, mine, docs, onVote }: Props) {
         </label>
       )}
 
-      <div className="space-y-3">
+      {/* Una columna en móvil, rejilla en cuanto hay sitio. */}
+      <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
         {list.map((t) => (
           <IdeaCard
             key={t.idea.id}
@@ -89,12 +95,13 @@ export function PhaseTriage({ tallies, mine, docs, onVote }: Props) {
             onVote={(v) => onVote(t.idea.id, v)}
           />
         ))}
-        {list.length === 0 && (
-          <p className="py-12 text-center text-sm text-slate-500">
-            Nada por aquí. Has votado todo en esta categoría 🎉
-          </p>
-        )}
       </div>
+
+      {list.length === 0 && (
+        <p className="py-12 text-center text-sm text-slate-500">
+          Nada por aquí. Has votado todo en esta categoría 🎉
+        </p>
+      )}
     </div>
   )
 }

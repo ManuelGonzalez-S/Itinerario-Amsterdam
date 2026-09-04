@@ -28,6 +28,21 @@ export function Results({ tallies, docs }: Props) {
   const ranked = plans.filter((t) => t.votes > 0)
   const vetoed = plans.filter((t) => t.no > 0)
 
+  const winnersByCategory = useMemo(() => {
+    const keys = Object.keys(CATEGORIES) as (keyof typeof CATEGORIES)[]
+    return keys
+      .map(
+        (c) =>
+          [
+            c,
+            plans.filter(
+              (t) => t.idea.category === c && (t.status === 'fijo' || t.status === 'probable'),
+            ),
+          ] as const,
+      )
+      .filter(([, items]) => items.length > 0)
+  }, [plans])
+
   const summary = useMemo(() => {
     const lines = ['🚲 ÁMSTERDAM 24-27 SEPT — cómo va la votación', '']
     const groups: [string, Tally[]][] = [
@@ -73,7 +88,7 @@ export function Results({ tallies, docs }: Props) {
   return (
     <div className="space-y-4">
       {/* Resumen numérico */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <Stat
           label="Gasto por persona"
           value={formatEuro(budget.perPerson)}
@@ -85,6 +100,21 @@ export function Results({ tallies, docs }: Props) {
           hint={`de ~${AVAILABLE_HOURS} h útiles`}
           alert={hours > AVAILABLE_HOURS}
         />
+        <div className="col-span-2 rounded-2xl border border-white/10 bg-slate-900/50 p-4 lg:col-span-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Han votado {docs.length} de {GROUP_SIZE}
+          </p>
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {docs.map((d) => (
+              <span key={d.name} className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">
+                {d.emoji} {d.name}
+                <span className="ml-1.5 text-slate-500">
+                  {Object.keys(d.triage ?? {}).length} votos
+                </span>
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
       {hours > AVAILABLE_HOURS && (
@@ -94,134 +124,114 @@ export function Results({ tallies, docs }: Props) {
         </p>
       )}
 
-      {/* Quién ha votado */}
-      <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          Han votado {docs.length} de {GROUP_SIZE}
-        </p>
-        <div className="mt-2.5 flex flex-wrap gap-2">
-          {docs.map((d) => (
-            <span
-              key={d.name}
-              className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300"
-            >
-              {d.emoji} {d.name}
-              <span className="ml-1.5 text-slate-500">
-                {Object.keys(d.triage ?? {}).length} votos
-              </span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Ranking */}
-      <Section title="El ranking" subtitle="Manda el consenso; los puntos deshacen los empates">
-        <ol className="space-y-2">
-          {ranked.map((t, i) => (
-            <li
-              key={t.idea.id}
-              className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/40 p-3"
-            >
-              <span className="w-6 shrink-0 text-center text-sm font-bold tabular-nums text-slate-600">
-                {i + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-white">{t.idea.title}</p>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  <span className="text-emerald-400">{t.yes} sí</span>
-                  {' · '}
-                  <span className="text-amber-400">{t.maybe} quizás</span>
-                  {t.no > 0 && (
-                    <>
-                      {' · '}
-                      <span className="text-rose-400">{t.no} no</span>
-                    </>
-                  )}
-                  {t.points > 0 && ` · ${t.points} pts`}
-                  {t.idea.price ? ` · ${formatEuro(t.idea.price)}` : ''}
-                </p>
-              </div>
-              <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${STATUS_META[t.status].classes}`}
+      {/* En escritorio: el ranking a la izquierda y el resto en una columna aparte. */}
+      <div className="space-y-4 xl:grid xl:grid-cols-[1.35fr_1fr] xl:items-start xl:gap-4 xl:space-y-0">
+        <Section title="El ranking" subtitle="Manda el consenso; los puntos deshacen los empates">
+          <ol className="space-y-2">
+            {ranked.map((t, i) => (
+              <li
+                key={t.idea.id}
+                className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/40 p-3"
               >
-                {STATUS_META[t.status].label}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </Section>
-
-      {/* Decisiones de grupo */}
-      {decisions.some((d) => d.votes > 0) && (
-        <Section title="Decisiones de grupo" subtitle="Presupuesto, abonos y ritmo del viaje">
-          <ul className="space-y-2">
-            {decisions
-              .filter((d) => d.votes > 0)
-              .map((t) => (
-                <li
-                  key={t.idea.id}
-                  className="rounded-xl border border-white/10 bg-slate-900/40 p-3"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-medium text-white">{t.idea.title}</p>
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${STATUS_META[t.status].classes}`}
-                    >
-                      {STATUS_META[t.status].label}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {t.yes} sí · {t.maybe} quizás · {t.no} no
+                <span className="w-6 shrink-0 text-center text-sm font-bold tabular-nums text-slate-600">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-white">{t.idea.title}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    <span className="text-emerald-400">{t.yes} sí</span>
+                    {' · '}
+                    <span className="text-amber-400">{t.maybe} quizás</span>
+                    {t.no > 0 && (
+                      <>
+                        {' · '}
+                        <span className="text-rose-400">{t.no} no</span>
+                      </>
+                    )}
+                    {t.points > 0 && ` · ${t.points} pts`}
+                    {t.idea.price ? ` · ${formatEuro(t.idea.price)}` : ''}
                   </p>
-                </li>
-              ))}
-          </ul>
-        </Section>
-      )}
-
-      {/* Vetos */}
-      {vetoed.length > 0 && (
-        <Section title="Con algún no" subtitle="Un solo no ya es motivo para hablarlo">
-          <ul className="space-y-1.5">
-            {vetoed.map((t) => (
-              <li key={t.idea.id} className="text-sm text-slate-400">
-                <span className="text-slate-200">{t.idea.title}</span>
-                <span className="text-rose-400"> — no: {t.vetoedBy.join(', ')}</span>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${STATUS_META[t.status].classes}`}
+                >
+                  {STATUS_META[t.status].label}
+                </span>
               </li>
             ))}
-          </ul>
+          </ol>
         </Section>
-      )}
 
-      {/* Por categoría, solo lo que gana */}
-      <Section title="Lo que va ganando, por bloques" subtitle="Fijo y muy probable">
-        <div className="space-y-3">
-          {(Object.keys(CATEGORIES) as (keyof typeof CATEGORIES)[]).map((c) => {
-            const items = plans.filter(
-              (t) =>
-                t.idea.category === c && (t.status === 'fijo' || t.status === 'probable'),
-            )
-            if (!items.length) return null
-            return (
-              <div key={c}>
-                <p className="text-xs font-semibold text-slate-400">
-                  {CATEGORIES[c].emoji} {CATEGORIES[c].label}
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-slate-300">
-                  {items.map((t) => t.idea.title).join(' · ')}
-                </p>
+        <div className="space-y-4">
+          {/* Decisiones de grupo */}
+          {decisions.some((d) => d.votes > 0) && (
+            <Section title="Decisiones de grupo" subtitle="Presupuesto, abonos y ritmo del viaje">
+              <ul className="space-y-2">
+                {decisions
+                  .filter((d) => d.votes > 0)
+                  .map((t) => (
+                    <li
+                      key={t.idea.id}
+                      className="rounded-xl border border-white/10 bg-slate-900/40 p-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-medium text-white">{t.idea.title}</p>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${STATUS_META[t.status].classes}`}
+                        >
+                          {STATUS_META[t.status].label}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {t.yes} sí · {t.maybe} quizás · {t.no} no
+                      </p>
+                    </li>
+                  ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* Vetos */}
+          {vetoed.length > 0 && (
+            <Section title="Con algún no" subtitle="Un solo no ya es motivo para hablarlo">
+              <ul className="space-y-1.5">
+                {vetoed.map((t) => (
+                  <li key={t.idea.id} className="text-sm text-slate-400">
+                    <span className="text-slate-200">{t.idea.title}</span>
+                    <span className="text-rose-400"> — no: {t.vetoedBy.join(', ')}</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* Por categoría, solo lo que gana. Si aún no gana nada, no pintamos
+              una tarjeta vacía. */}
+          {winnersByCategory.length > 0 && (
+            <Section title="Lo que va ganando, por bloques" subtitle="Fijo y muy probable">
+              <div className="space-y-3">
+                {winnersByCategory.map(([c, items]) => (
+                  <div key={c}>
+                    <p className="text-xs font-semibold text-slate-400">
+                      {CATEGORIES[c].emoji} {CATEGORIES[c].label}
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-300">
+                      {items.map((t) => t.idea.title).join(' · ')}
+                    </p>
+                  </div>
+                ))}
               </div>
-            )
-          })}
-        </div>
-      </Section>
+            </Section>
+          )}
 
-      <button
-        onClick={copySummary}
-        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
-      >
-        {copied ? '✅ Copiado, pégalo en el grupo' : '📋 Copiar resumen para WhatsApp'}
-      </button>
+          <button
+            onClick={copySummary}
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
+          >
+            {copied ? '✅ Copiado, pégalo en el grupo' : '📋 Copiar resumen para WhatsApp'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

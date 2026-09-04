@@ -5,10 +5,10 @@
  */
 export function Briefing() {
   return (
-    <div className="space-y-4">
-      <section className="rounded-2xl border border-rose-500/30 bg-rose-950/30 p-4">
-        <h2 className="text-sm font-bold text-rose-200">🚨 Lo que caduca (mirar hoy)</h2>
-        <ul className="mt-3 space-y-3 text-xs leading-relaxed text-rose-100/90">
+    <div className="space-y-4 xl:grid xl:grid-cols-2 xl:items-start xl:gap-4 xl:space-y-0">
+      <section className="rounded-2xl border border-rose-500/30 bg-rose-950/30 p-4 xl:col-span-2">
+        <h2 className="text-sm font-bold text-rose-200 lg:text-base">🚨 Lo que caduca (mirar hoy)</h2>
+        <ul className="mt-3 space-y-3 text-xs leading-relaxed text-rose-100/90 lg:text-sm xl:grid xl:grid-cols-3 xl:gap-4 xl:space-y-0">
           <li>
             <strong className="text-white">Casa de Ana Frank.</strong> Las entradas salen cada
             martes a las 10:00 CEST para seis semanas después. Las de nuestras fechas se
@@ -30,8 +30,8 @@ export function Briefing() {
       </section>
 
       <section className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <h2 className="text-sm font-bold text-white">🎟️ Abonos: cuál sale a cuenta</h2>
-        <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-300">
+        <h2 className="text-sm font-bold text-white lg:text-base">🎟️ Abonos: cuál sale a cuenta</h2>
+        <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-300 lg:text-sm">
           <p>
             <strong className="text-white">GVB 72 h — 21,50 €.</strong> Solo transporte. Ámsterdam
             se camina y se pedalea bien, así que muchas veces ni hace falta.
@@ -58,8 +58,8 @@ export function Briefing() {
       </section>
 
       <section className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <h2 className="text-sm font-bold text-white">📅 Qué pasa esos cuatro días</h2>
-        <ul className="mt-3 space-y-2 text-xs leading-relaxed text-slate-300">
+        <h2 className="text-sm font-bold text-white lg:text-base">📅 Qué pasa esos cuatro días</h2>
+        <ul className="mt-3 space-y-2 text-xs leading-relaxed text-slate-300 lg:text-sm">
           <li>
             <strong className="text-white">Jueves 24 y viernes 25</strong> son laborables: los
             museos están bastante mejor que el fin de semana. El Van Gogh abre hasta las 21:00 el
@@ -82,8 +82,8 @@ export function Briefing() {
       </section>
 
       <section className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <h2 className="text-sm font-bold text-white">🌧️ El tiempo y la ropa</h2>
-        <p className="mt-2.5 text-xs leading-relaxed text-slate-300">
+        <h2 className="text-sm font-bold text-white lg:text-base">🌧️ El tiempo y la ropa</h2>
+        <p className="mt-2.5 text-xs leading-relaxed text-slate-300 lg:text-sm">
           Finales de septiembre en Ámsterdam: unos 17-18 °C de día, 11 °C de noche y lluvia
           intermitente casi garantizada algún rato. Chubasquero mejor que paraguas, porque hace
           viento. Y calzado cómodo: se camina mucho más de lo que parece.
@@ -91,8 +91,8 @@ export function Briefing() {
       </section>
 
       <section className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <h2 className="text-sm font-bold text-white">✈️ Del aeropuerto al centro</h2>
-        <p className="mt-2.5 text-xs leading-relaxed text-slate-300">
+        <h2 className="text-sm font-bold text-white lg:text-base">✈️ Del aeropuerto al centro</h2>
+        <p className="mt-2.5 text-xs leading-relaxed text-slate-300 lg:text-sm">
           Tren directo Schiphol – Amsterdam Centraal en 17 minutos por unos 6 € por persona. Un
           taxi son 45-55 € para los cuatro, así que solo compensa con maletas grandes o a horas
           raras. Importante: los trenes NS no entran ni en el abono GVB ni en la City Card.
@@ -100,8 +100,8 @@ export function Briefing() {
       </section>
 
       <section className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <h2 className="text-sm font-bold text-white">💡 Cómo funciona esta votación</h2>
-        <ol className="mt-3 space-y-2 text-xs leading-relaxed text-slate-300">
+        <h2 className="text-sm font-bold text-white lg:text-base">💡 Cómo funciona esta votación</h2>
+        <ol className="mt-3 space-y-2 text-xs leading-relaxed text-slate-300 lg:text-sm">
           <li>
             <strong className="text-white">1. Votar.</strong> Pasa por las ideas con Sí, Quizás o
             No. Un No es un veto: lo que alguien no quiere, no se hace.
