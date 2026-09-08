@@ -172,7 +172,7 @@ export const PLANS: Plan[] = [
     thesis:
       'El Van Gogh, el Moco y NEMO están los tres con cero síes y cuatro quizás: nadie los quiere lo bastante para pedirlos y nadie los rechaza. Este plan decide por vosotros y los mete, aprovechando que el Van Gogh abre hasta las 21:00 los viernes, que es su mejor momento y el más vacío.',
     tradeoff:
-      'Cuesta 60 € más por persona y hay que sacrificar el alquiler de bicis y algo de calle. Y el Rijksmuseum sigue fuera: lo descartasteis vosotros, no yo.',
+      'Solo cuesta unos 13 € más por persona que el plan del consenso, pero hay que sacrificar el alquiler de bicis y algo de calle. El Rijksmuseum sigue fuera porque salió descartado en la votación.',
     days: [
       {
         day: 'jue24',
@@ -323,7 +323,7 @@ export const PLANS: Plan[] = [
     thesis:
       'Aquí entra absolutamente todo lo que no tiene ni un «no»: los 19 de consenso más los 9 que están en el aire. No es un plan realista, es la foto de lo que os cabría si el viaje durase más. Sirve para debatir por descarte: mirad la lista y decid qué quitáis.',
     tradeoff:
-      'No cabe. Se pasa de las 40 horas útiles del viaje y rompe vuestra propia regla de dos actividades de pago al día. Elegirlo significa recortar sobre la marcha, cansados y discutiendo.',
+      'Llena hasta el último hueco: 48,5 h de las 48 reales que tiene el viaje, sin un minuto de margen para que nada se alargue. Y algún día lleva 3 actividades de pago cuando votasteis un máximo de 2. Elegirlo significa recortar sobre la marcha, cansados y discutiendo.',
     warning:
       'Este plan está aquí como herramienta de debate, no como propuesta. Si os gusta lo que hay, la conversación real es qué tres o cuatro cosas se caen.',
     days: [
