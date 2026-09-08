@@ -1,12 +1,6 @@
-export type Vote = 'yes' | 'maybe' | 'no'
+export type Category = 'museos' | 'ciudad' | 'excursiones' | 'comida' | 'noche' | 'logistica'
 
-export type Category =
-  | 'museos'
-  | 'ciudad'
-  | 'excursiones'
-  | 'comida'
-  | 'noche'
-  | 'logistica'
+export type TripDay = 'jue24' | 'vie25' | 'sab26' | 'dom27'
 
 export interface Idea {
   id: string
@@ -17,57 +11,23 @@ export interface Idea {
   /** Duración aproximada en horas. null si no aplica. */
   hours: number | null
   /**
-   * Horas que bloquea de verdad en la agenda del día, cuando no coincide con
-   * su duración. El alquiler de bicis son 4 h de alquiler, pero esas horas las
-   * ocupan el Vondelpark y el Jordaan, que se hacen justamente en bici: en la
-   * agenda solo cuenta ir a recogerlas y devolverlas.
+   * Horas que bloquea de verdad en la agenda del día, cuando no coinciden con
+   * su duración. El alquiler de bicis son 4 h, pero esas horas las ocupan el
+   * Vondelpark y el Jordaan, que se hacen justamente en bici.
    */
   scheduleHours?: number
-  /** Frase corta de por qué merece la pena (o no). */
+  /** Frase corta de por qué merece la pena. */
   pitch: string
   /** Datos duros: horarios, cómo llegar, avisos. */
   notes?: string
-  /** Aviso importante que se pinta destacado en la tarjeta. */
+  /** Aviso importante que se pinta destacado. */
   warning?: string
-  /** Enlace oficial. */
+  /** Enlace oficial, para comprar o consultar horarios. */
   url?: string
-  /** Solo disponible/recomendable en ciertos días del viaje. */
+  /** Solo disponible o recomendable en ciertos días del viaje. */
   onlyDays?: TripDay[]
   /** Se agota o hay que reservar con antelación. */
   needsBooking?: boolean
-  /** Marcado como decisión de grupo, no como plan (presupuesto, ritmo...). */
+  /** Decisión de grupo (abonos, presupuesto), no una actividad. */
   decision?: boolean
-}
-
-export type TripDay = 'jue24' | 'vie25' | 'sab26' | 'dom27'
-
-export interface Voter {
-  id: string
-  name: string
-  emoji: string
-}
-
-export interface VoteDoc {
-  name: string
-  emoji: string
-  triage: Record<string, Vote>
-  points: Record<string, number>
-  /** La ruta ideal de esta persona: a qué día asigna cada idea. */
-  itinerary?: Record<string, TripDay>
-  updatedAt: number
-}
-
-export interface Tally {
-  idea: Idea
-  yes: number
-  maybe: number
-  no: number
-  votes: number
-  points: number
-  /** yes=2, maybe=1, no=-1 */
-  triageScore: number
-  /** Puntuación combinada para ordenar el ranking. */
-  score: number
-  status: 'fijo' | 'probable' | 'dudoso' | 'descartado' | 'sin-votos'
-  vetoedBy: string[]
 }

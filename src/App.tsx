@@ -1,236 +1,262 @@
-import { useMemo, useState } from 'react'
-import { useIdentity } from './hooks/useIdentity'
-import { useVotes } from './hooks/useVotes'
-import { tallyAll } from './lib/scoring'
-import { WhoAreYou } from './components/WhoAreYou'
-import { NextStep } from './components/NextStep'
-import { PhaseVote } from './components/PhaseVote'
-import { Results } from './components/Results'
-import { PhasePlans } from './components/PhasePlans'
-import { PhaseMyRoute } from './components/PhaseMyRoute'
-import { Briefing } from './components/Briefing'
-
-type Tab = 'ruta' | 'planes' | 'votar' | 'resultados' | 'info'
+import { useState } from 'react'
+import type { Idea } from './types'
+import { IDEAS_BY_ID } from './data/ideas'
+import {
+  DAY_NAMES,
+  PLAN_SUMMARIES,
+  daysUntilTrip,
+  formatEuro,
+  slotIdea,
+  slotPrice,
+  whatsappText,
+  type PlanSummary,
+} from './lib/plan'
 
 /**
- * Cuatro destinos en la barra, no seis. Votar y Puntos se fusionaron porque
- * son dos pasos de lo mismo, e Info sale del menú principal y se abre desde el
- * icono de la cabecera: es de consulta, no un paso del proceso.
+ * La página es el mensaje: tres itinerarios completos y una sola pregunta,
+ * ¿A, B o C? La decisión se toma en el grupo de WhatsApp, no aquí, así que no
+ * hay nada que votar ni guardar. Eso permitió quitar Firebase entero.
  */
-const TABS: { id: Tab; label: string; emoji: string; hint: string }[] = [
-  { id: 'ruta', label: 'Mi ruta', emoji: '✏️', hint: 'Arma tu itinerario' },
-  { id: 'planes', label: 'Planes', emoji: '🗺️', hint: 'Las 4 propuestas' },
-  { id: 'votar', label: 'Votar', emoji: '🗳️', hint: 'Tus votos y puntos' },
-  { id: 'resultados', label: 'Resultados', emoji: '🏆', hint: 'Cómo va la cosa' },
-]
-
-/** Salida del viaje: jueves 24 de septiembre de 2026. */
-const TRIP_START = new Date('2026-09-24T00:00:00+02:00')
-
-function countdownLabel(): string {
-  const days = Math.ceil((TRIP_START.getTime() - Date.now()) / 86_400_000)
-  if (days > 1) return `Quedan ${days} días`
-  if (days === 1) return 'Es mañana'
-  if (days === 0) return '¡Es hoy!'
-  return '¡Ya estamos!'
-}
-
 export default function App() {
-  const { voter, identify, forget } = useIdentity()
-  const votes = useVotes(voter)
-  const [tab, setTab] = useState<Tab>('ruta')
+  const [activo, setActivo] = useState(0)
+  // 'fallo' importa: el portapapeles se puede denegar (sin HTTPS, permisos,
+  // pestaña sin foco) y un botón de copiar que no avisa cuando no copia es
+  // peor que no tenerlo.
+  const [copia, setCopia] = useState<'no' | 'si' | 'fallo'>('no')
+  const dias = daysUntilTrip()
+  const plan = PLAN_SUMMARIES[activo]
+  const barato = PLAN_SUMMARIES.reduce((a, b) => (b.cost < a.cost ? b : a))
 
-  const tallies = useMemo(() => tallyAll(votes.allDocs), [votes.allDocs])
-
-  if (!voter) {
-    return <WhoAreYou onIdentify={identify} alreadyVoting={votes.voters} />
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(whatsappText())
+      setCopia('si')
+      window.setTimeout(() => setCopia('no'), 2500)
+    } catch {
+      setCopia('fallo')
+    }
   }
-
-  // Hasta que no sepamos qué hay guardado, no se deja tocar nada: una
-  // pulsación con el estado a medio cargar sobrescribiría los votos buenos.
-  if (votes.loading) {
-    return (
-      <div className="grid min-h-dvh place-items-center px-5">
-        <div className="text-center">
-          <p className="animate-pulse text-4xl">🚲</p>
-          <p className="mt-4 text-sm text-slate-400">Cargando vuestros votos…</p>
-        </div>
-      </div>
-    )
-  }
-
-  const content = (
-    <>
-      {votes.error && (
-        <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs leading-relaxed text-amber-200">
-          ⚠️ {votes.error}
-        </div>
-      )}
-
-      {tab !== 'info' && (
-        <NextStep mine={votes.mine} docs={votes.allDocs} onGo={(t) => setTab(t)} />
-      )}
-
-      {tab === 'ruta' && (
-        <PhaseMyRoute
-          mine={votes.mine}
-          docs={votes.allDocs}
-          tallies={tallies}
-          onSetDay={votes.setItineraryDay}
-          onReplace={votes.replaceItinerary}
-        />
-      )}
-      {tab === 'planes' && (
-        <PhasePlans mine={votes.mine} docs={votes.allDocs} onVote={votes.setTriage} />
-      )}
-      {tab === 'votar' && (
-        <PhaseVote
-          tallies={tallies}
-          mine={votes.mine}
-          docs={votes.allDocs}
-          spent={votes.pointsSpent}
-          onVote={votes.setTriage}
-          onSetPoints={votes.setPoints}
-          onResetPoints={votes.resetPoints}
-        />
-      )}
-      {tab === 'resultados' && <Results tallies={tallies} docs={votes.allDocs} />}
-      {tab === 'info' && <Briefing />}
-    </>
-  )
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl lg:gap-10 lg:px-8">
-      {/* ── Barra lateral, solo en pantallas grandes ── */}
-      <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-64 lg:shrink-0 lg:flex-col lg:py-8">
-        <div>
-          <p className="text-3xl">🚲</p>
-          <h1 className="mt-2 text-2xl leading-tight font-bold text-white">Ámsterdam</h1>
-          <p className="text-sm font-medium text-slate-400">24 – 27 de septiembre</p>
-          <p className="mt-1 text-sm font-semibold text-orange-300">{countdownLabel()}</p>
-        </div>
+    <div className="mx-auto max-w-3xl px-5 pb-16">
+      <header className="pt-10 pb-6 text-center">
+        <p className="text-4xl">🚲</p>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">Ámsterdam</h1>
+        <p className="mt-1 text-lg font-medium text-slate-300">24 – 27 de septiembre</p>
+        <p className="mt-1 text-sm font-semibold text-orange-300">
+          {dias > 1 ? `Quedan ${dias} días` : dias === 1 ? 'Es mañana' : '¡Ya estamos!'}
+        </p>
+        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-slate-400">
+          Tres itinerarios completos, sacados de lo que votamos los cuatro. Ninguno mete nada que
+          alguien haya rechazado. <strong className="text-slate-200">Elegid uno por el grupo.</strong>
+        </p>
+      </header>
 
-        <nav className="mt-8 flex flex-col gap-1">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              aria-current={tab === t.id ? 'page' : undefined}
-              className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
-                tab === t.id
-                  ? 'bg-white/10 text-white'
-                  : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
-              }`}
-            >
-              <span className="text-lg leading-none" aria-hidden>
-                {t.emoji}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold">{t.label}</span>
-                <span className="block truncate text-xs text-slate-500">{t.hint}</span>
-              </span>
-            </button>
-          ))}
+      {/* Lo urgente, antes que nada */}
+      <section className="rounded-2xl border border-rose-500/30 bg-rose-950/40 p-4 sm:p-5">
+        <h2 className="text-base font-bold text-rose-200">⚠️ Esto no puede esperar</h2>
+        <p className="mt-2 text-sm leading-relaxed text-rose-100/90">
+          La <strong>Casa de Ana Frank</strong> está en los tres planes y quedan {dias} días. Solo
+          se vende en su web, no hay taquilla ni lista de espera, y las entradas de nuestras fechas
+          salieron el <strong>11 de agosto</strong>. Hay que mirar hoy: si queda algo serán horas de
+          noche.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <a
+            href="https://www.annefrank.org/en/museum/tickets/"
+            target="_blank"
+            rel="noreferrer"
+            className="min-h-11 rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-400"
+          >
+            Comprar Ana Frank ↗
+          </a>
+          <a
+            href="https://www.vangoghmuseum.nl/en/visit/tickets-and-ticket-prices"
+            target="_blank"
+            rel="noreferrer"
+            className="min-h-11 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/20"
+          >
+            Van Gogh (plan B) ↗
+          </a>
+        </div>
+      </section>
+
+      {/* Comparación de un vistazo */}
+      <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
+        {PLAN_SUMMARIES.map((s, i) => (
           <button
-            onClick={() => setTab('info')}
-            aria-current={tab === 'info' ? 'page' : undefined}
-            className={`mt-2 flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
-              tab === 'info'
-                ? 'bg-white/10 text-white'
-                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+            key={s.plan.id}
+            onClick={() => setActivo(i)}
+            aria-pressed={activo === i}
+            className={`min-h-20 rounded-2xl border px-2 py-3 text-center transition ${
+              activo === i
+                ? 'border-orange-400 bg-orange-500/15'
+                : 'border-white/10 bg-slate-900/50 hover:bg-slate-900'
             }`}
           >
-            <span className="text-lg leading-none" aria-hidden>
-              📍
+            <span className="block text-xs font-semibold text-slate-500">PLAN {s.letra}</span>
+            <span className="mt-0.5 block text-sm leading-tight font-bold text-white">
+              {s.plan.name}
             </span>
-            <span className="text-sm font-semibold">Info del viaje</span>
-          </button>
-        </nav>
-
-        {votes.voters.length > 0 && (
-          <div className="mt-8">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              En el viaje
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {votes.voters.map((v) => (
-                <span
-                  key={v.name}
-                  className="rounded-full bg-white/5 px-2.5 py-1 text-xs text-slate-300"
-                >
-                  {v.emoji} {v.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <button
-          onClick={forget}
-          className="mt-auto min-h-11 self-start rounded-full bg-white/5 px-3.5 py-2 text-xs text-slate-300 transition hover:bg-white/10"
-        >
-          {voter.emoji} {voter.name} · cambiar
-        </button>
-      </aside>
-
-      {/* ── Contenido ── */}
-      <div className="min-w-0 flex-1 px-5 pb-28 lg:px-0 lg:pt-8 lg:pb-12">
-        {/* Cabecera, solo en móvil: en escritorio está en la barra lateral */}
-        <header className="sticky top-0 z-20 -mx-5 mb-4 border-b border-white/5 bg-slate-950/80 px-5 py-2.5 backdrop-blur-md lg:hidden">
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold text-white">
-                🚲 Ámsterdam <span className="font-normal text-slate-500">24–27 sept</span>
-              </h1>
-              <p className="text-xs text-orange-300/90">{countdownLabel()}</p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <button
-                onClick={() => setTab('info')}
-                aria-label="Información del viaje"
-                title="Información del viaje"
-                className={`grid size-11 shrink-0 place-items-center rounded-full text-base transition ${
-                  tab === 'info'
-                    ? 'bg-orange-500/20 text-orange-300'
-                    : 'bg-white/5 hover:bg-white/10'
-                }`}
-              >
-                📍
-              </button>
-              <button
-                onClick={forget}
-                title="Cambiar de persona"
-                className="min-h-11 rounded-full bg-white/5 px-3 py-2 text-xs text-slate-300 hover:bg-white/10"
-              >
-                {voter.emoji} {voter.name}
-              </button>
-            </div>
-          </div>
-        </header>
-
-        <main>{content}</main>
-      </div>
-
-      {/* ── Barra inferior, solo en móvil ── */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
-        <div className="mx-auto flex max-w-lg">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              aria-current={tab === t.id ? 'page' : undefined}
-              className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium transition ${
-                tab === t.id ? 'text-orange-300' : 'text-slate-500 hover:text-slate-300'
+            <span
+              className={`mt-1 block text-sm font-semibold ${
+                s === barato ? 'text-emerald-300' : 'text-slate-400'
               }`}
             >
-              <span className="text-xl leading-none" aria-hidden>
-                {t.emoji}
-              </span>
-              {t.label}
-            </button>
-          ))}
+              {formatEuro(s.cost)}
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="mt-2 text-center text-xs text-slate-500">
+        Por persona, sin vuelos ni hotel. Incluye entradas, comidas y transporte.
+      </p>
+
+      {/* El plan elegido, al detalle */}
+      <PlanDetalle key={plan.plan.id} plan={plan} />
+
+      {/* Copiar para el grupo */}
+      <button
+        onClick={copiar}
+        className="mt-8 min-h-12 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
+      >
+        {copia === 'si' ? '✅ Copiado, pégalo en el grupo' : '📋 Copiar los tres planes para WhatsApp'}
+      </button>
+
+      {/* Si el navegador no deja copiar, al menos que el texto esté a mano */}
+      {copia === 'fallo' && (
+        <div className="mt-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+          <p className="text-xs leading-relaxed text-amber-200">
+            Tu navegador no ha dejado copiar automáticamente. Selecciona el texto de aquí abajo y
+            cópialo a mano.
+          </p>
+          <textarea
+            readOnly
+            rows={10}
+            value={whatsappText()}
+            onFocus={(e) => e.currentTarget.select()}
+            className="mt-2.5 w-full rounded-xl border border-white/10 bg-black/40 p-3 font-mono text-xs text-slate-300"
+          />
         </div>
-      </nav>
+      )}
+
+      {/* La buena letra, para quien quiera entrar al detalle */}
+      <details className="mt-6 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-300">
+          La buena letra: abonos, tiempo y aeropuerto
+        </summary>
+        <div className="mt-3 space-y-3 text-sm leading-relaxed text-slate-400">
+          <p>
+            <strong className="text-slate-200">Abonos.</strong> El abono GVB de 72 h cuesta 21,50 €
+            y es solo transporte. La I amsterdam City Card sale desde 67 € por 24 h e incluye
+            transporte, un crucero y más de 70 museos, pero deja fuera justo el Van Gogh y Ana
+            Frank. El Museumkaart (75 €) sí los incluye, pero salió descartado por unanimidad en la
+            votación. Con el Rijksmuseum también descartado, lo que sale a cuenta es{' '}
+            <strong className="text-slate-200">GVB + entradas sueltas</strong>.
+          </p>
+          <p>
+            <strong className="text-slate-200">Del aeropuerto al centro.</strong> Tren directo
+            Schiphol – Centraal en 17 minutos por unos 6 € por persona. Un taxi son 45-55 € para
+            los cuatro. Los trenes NS no entran ni en el abono GVB ni en la City Card.
+          </p>
+          <p>
+            <strong className="text-slate-200">El tiempo.</strong> Finales de septiembre: unos 17-18
+            °C de día, 11 °C de noche y lluvia intermitente casi garantizada algún rato.
+            Chubasquero mejor que paraguas, porque hace viento.
+          </p>
+          <p>
+            <strong className="text-slate-200">Fechas que aprietan.</strong> El mercado Albert Cuyp
+            cierra los domingos. El festival Craft in Focus del NDSM es solo el 26 y el 27. El Van
+            Gogh abre hasta las 21:00 únicamente los viernes, que es su mejor momento y el más
+            vacío. NEMO cierra a las 17:30.
+          </p>
+        </div>
+      </details>
+
+      <p className="mt-8 text-center text-xs text-slate-600">
+        Precios y horarios comprobados en las webs oficiales en septiembre de 2026.
+      </p>
     </div>
+  )
+}
+
+function PlanDetalle({ plan }: { plan: PlanSummary }) {
+  return (
+    <section className="mt-6">
+      <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:p-5">
+        <h2 className="text-xl font-bold text-white">
+          Plan {plan.letra} · {plan.plan.name}
+        </h2>
+        <p className="mt-0.5 text-sm font-medium text-orange-300">{plan.plan.tagline}</p>
+        <p className="mt-3 text-sm leading-relaxed text-slate-300">{plan.plan.thesis}</p>
+        <p className="mt-3 rounded-xl border border-white/10 bg-black/25 px-3.5 py-2.5 text-sm leading-relaxed text-slate-400">
+          <strong className="text-slate-200">Qué deja fuera:</strong> {plan.plan.tradeoff}
+        </p>
+      </div>
+
+      <div className="mt-3 space-y-3">
+        {plan.days.map((d) => (
+          <div key={d.day} className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+              <h3 className="text-base font-bold text-white">
+                {DAY_NAMES[d.day]}
+                <span className="ml-2 text-sm font-normal text-slate-500">{d.title}</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                {d.hours} h de {d.available} · {formatEuro(d.cost)}
+              </p>
+            </div>
+
+            <ol className="mt-3 space-y-2.5">
+              {d.slots.map((s, i) => {
+                const idea = slotIdea(s)
+                const precio = slotPrice(s)
+                return (
+                  <li key={`${d.day}-${i}`} className="flex gap-3">
+                    <span className="w-12 shrink-0 pt-0.5 text-sm font-medium tabular-nums text-slate-500">
+                      {s.time}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="text-sm text-slate-200">
+                        {s.label ?? idea?.title}
+                      </span>
+                      {precio > 0 && (
+                        <span className="ml-2 text-xs text-slate-500">{formatEuro(precio)}</span>
+                      )}
+                      {s.ticket && (
+                        <span className="ml-2 rounded bg-sky-500/15 px-1.5 py-0.5 text-[11px] font-medium text-sky-300">
+                          entrada
+                        </span>
+                      )}
+                      {s.note && (
+                        <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
+                          {s.note}
+                        </span>
+                      )}
+                      {idea?.url && <Enlace idea={idea} />}
+                    </span>
+                  </li>
+                )
+              })}
+            </ol>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function Enlace({ idea }: { idea: Idea }) {
+  // Solo enseñamos el enlace donde de verdad hace falta comprar o mirar hora.
+  if (!idea.needsBooking || !IDEAS_BY_ID.has(idea.id)) return null
+  return (
+    <a
+      href={idea.url}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-0.5 block text-xs font-medium text-sky-300 hover:text-sky-200"
+    >
+      Comprar o ver horarios ↗
+    </a>
   )
 }

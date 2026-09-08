@@ -45,6 +45,8 @@ export interface Plan {
   thesis: string
   /** Qué se sacrifica al elegirlo. Sin esto no hay debate honesto. */
   tradeoff: string
+  /** La misma idea en una línea, para el mensaje de WhatsApp. */
+  tradeoffShort: string
   days: PlanDay[]
   warning?: string
 }
@@ -61,7 +63,7 @@ const LLEGADA: PlanSlot = {
   time: '11:00',
   ideaId: 'dec-aeropuerto-tren',
   label: 'Tren Schiphol → Centraal',
-  note: '17 minutos. Votado por unanimidad.',
+  note: '17 minutos y unos 6 € por persona. Un taxi son 45-55 € para los cuatro.',
 }
 
 export const PLANS: Plan[] = [
@@ -74,6 +76,7 @@ export const PLANS: Plan[] = [
       'Únicamente los 8 planes con cuatro síes y los 11 que tienen dos o más síes y ningún no. Nadie puede quejarse de nada porque nadie ha dicho no a nada de aquí. Es la línea de salida: si no os ponéis de acuerdo en otra cosa, este plan ya está aprobado.',
     tradeoff:
       'Cero museos salvo Ana Frank. Si alguien se arrepiente luego de no haber visto el Van Gogh, es este plan el que lo deja fuera.',
+    tradeoffShort: 'ningún museo salvo Ana Frank.',
     days: [
       {
         day: 'jue24',
@@ -173,6 +176,7 @@ export const PLANS: Plan[] = [
       'El Van Gogh, el Moco y NEMO están los tres con cero síes y cuatro quizás: nadie los quiere lo bastante para pedirlos y nadie los rechaza. Este plan decide por vosotros y los mete, aprovechando que el Van Gogh abre hasta las 21:00 los viernes, que es su mejor momento y el más vacío.',
     tradeoff:
       'Solo cuesta unos 13 € más por persona que el plan del consenso, pero hay que sacrificar el alquiler de bicis y algo de calle. El Rijksmuseum sigue fuera porque salió descartado en la votación.',
+    tradeoffShort: 'las bicis, y algo de calle por meter tres museos.',
     days: [
       {
         day: 'jue24',
@@ -252,6 +256,7 @@ export const PLANS: Plan[] = [
       'Dijisteis 4 no a «dedicar un día entero fuera», pero Haarlem sigue viva con cuatro quizás. Y es que Haarlem no es un día: son 15 minutos de tren y cabe en media jornada. Ámsterdam en pequeño, con canales y sin turistas. El festival del NDSM se mueve al domingo, que también lo tiene.',
     tradeoff:
       'Se cae el crucero por los canales, que tenía dos síes. Y sigue sin haber museos más allá de Ana Frank.',
+    tradeoffShort: 'el crucero por los canales, y tampoco hay museos aparte de Ana Frank.',
     days: [
       {
         day: 'jue24',
@@ -315,78 +320,8 @@ export const PLANS: Plan[] = [
     ],
   },
 
-  // ─────────────────────────────────────────────────────────────────────
-  {
-    id: 'plan-maximo',
-    name: 'El máximo',
-    tagline: 'Todo lo que nadie ha vetado, para ver qué sobra',
-    thesis:
-      'Aquí entra absolutamente todo lo que no tiene ni un «no»: los 19 de consenso más los 9 que están en el aire. No es un plan realista, es la foto de lo que os cabría si el viaje durase más. Sirve para debatir por descarte: mirad la lista y decid qué quitáis.',
-    tradeoff:
-      'Llena hasta el último hueco: 48,5 h de las 48 reales que tiene el viaje, sin un minuto de margen para que nada se alargue. Y algún día lleva 3 actividades de pago cuando votasteis un máximo de 2. Elegirlo significa recortar sobre la marcha, cansados y discutiendo.',
-    warning:
-      'Este plan está aquí como herramienta de debate, no como propuesta. Si os gusta lo que hay, la conversación real es qué tres o cuatro cosas se caen.',
-    days: [
-      {
-        day: 'jue24',
-        title: 'Llegada, centro y Ana Frank',
-        slots: [
-          LLEGADA,
-          { time: '12:30', ideaId: 'free-tour', ticket: true },
-          { time: '15:00', ideaId: 'vleminckx' },
-          { time: '15:30', ideaId: 'van-stapele' },
-          { time: '16:00', ideaId: 'bloemenmarkt' },
-          { time: '17:00', ideaId: 'ana-frank', ticket: true },
-          { time: '19:00', ideaId: 'foodhallen' },
-          { time: '21:00', ideaId: 'barrio-rojo' },
-          { time: '22:00', ideaId: 'coffeeshop' },
-          { time: '23:00', ideaId: 'rooftop' },
-        ],
-      },
-      {
-        day: 'vie25',
-        title: 'Museos, mercado y Van Gogh de noche',
-        slots: [
-          { time: '09:00', ideaId: 'brunch' },
-          { time: '10:30', ideaId: 'albert-cuyp' },
-          { time: '12:00', ideaId: 'moco', ticket: true },
-          { time: '13:45', ideaId: 'pancakes', note: 'Comida: una tortita gigante y listo.' },
-          { time: '15:00', ideaId: 'vondelpark' },
-          { time: '16:30', ideaId: 'bici', ticket: true },
-          { time: '19:00', ideaId: 'van-gogh', ticket: true, note: 'Viernes hasta las 21:00.' },
-          { time: '21:30', ideaId: 'moeders', note: 'Hay que reservar.' },
-        ],
-      },
-      {
-        day: 'sab26',
-        title: 'NEMO, Noord y cena buena',
-        slots: [
-          { time: '09:30', ideaId: 'nemo', ticket: true },
-          { time: '12:15', ideaId: 'verzetsmuseum', ticket: true, note: 'Está al lado de NEMO.' },
-          { time: '14:00', label: 'Comida rápida', price: 15, hours: 1 },
-          { time: '15:00', ideaId: 'ndsm' },
-          { time: '18:00', ideaId: 'adam-lookout', ticket: true },
-          { time: '19:30', ideaId: 'cena-especial', note: 'Reservar con semanas de antelación.' },
-          { time: '22:00', ideaId: 'brouwerij-ij' },
-        ],
-      },
-      {
-        day: 'dom27',
-        title: 'Haarlem, canales y vuelta',
-        slots: [
-          { time: '09:00', ideaId: 'haarlem', ticket: true },
-          { time: '14:30', ideaId: 'crucero-canales', ticket: true },
-          { time: '16:00', ideaId: 'jordaan' },
-          { time: '18:30', ideaId: 'brown-cafe' },
-          { time: '21:00', ideaId: 'escape-bolera', ticket: true },
-          { time: '23:00', label: 'Tren a Schiphol', price: 5.9, hours: 0.5 },
-        ],
-      },
-    ],
-  },
 ]
 
-export const PLAN_IDS = PLANS.map((p) => p.id)
 
 /**
  * Horas realmente disponibles cada día. No son cuatro días iguales: el jueves
