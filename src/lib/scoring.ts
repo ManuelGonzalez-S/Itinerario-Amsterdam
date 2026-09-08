@@ -133,7 +133,9 @@ function slotPrice(s: PlanSlot): number {
 }
 
 function slotHours(s: PlanSlot): number {
-  return s.hours ?? (s.ideaId ? IDEAS_BY_ID.get(s.ideaId)?.hours ?? 0 : 0)
+  if (s.hours !== undefined) return s.hours
+  const idea = s.ideaId ? IDEAS_BY_ID.get(s.ideaId) : undefined
+  return idea?.scheduleHours ?? idea?.hours ?? 0
 }
 
 export function summarizePlan(plan: Plan, docs: VoteDoc[]): PlanSummary {

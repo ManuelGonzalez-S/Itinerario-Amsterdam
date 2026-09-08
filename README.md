@@ -17,9 +17,28 @@ Cuatro pasos, pensados para hacerse en el móvil:
 4. **Planes** — cuatro itinerarios completos hora a hora, generados a partir de los votos
    reales. Se marcan igual (Me vale / Con cambios / No) y sirven para debatir sobre algo
    concreto en vez de sobre una lista de 64 cosas.
+5. **Mi ruta** — cada uno arma su itinerario ideal colocando cosas por día, partiendo de cero o
+   de uno de los planes. Se guarda solo y los demás lo ven al momento.
 
 No hay registro ni contraseñas: se entra con el nombre, que sirve para saber de quién es cada
 voto. Todo se sincroniza en tiempo real entre los cuatro.
+
+### Mi ruta: las dos fuerzas opuestas
+
+El grupo pidió dos cosas que tiran en direcciones contrarias: no ir apretados de horario y no
+dejarse cosas. El constructor mide las dos a la vez en vez de elegir una:
+
+- **No ir apretados.** Cada día tiene un **tope cómodo** (su ventana real menos `SLACK_HOURS`,
+  2 h) y un **tope máximo**. En la barra de cada día, la marca blanca es el tope cómodo y el
+  final es el máximo. De ahí salen los cuatro estados: sin nada, ritmo tranquilo, vas justo y no
+  cabe.
+- **No dejarse cosas.** Debajo aparece todo lo que la ruta deja fuera, **ordenado por cuánto lo
+  quiere el grupo**, para ver qué duele más perderse.
+
+Hay ideas que no bloquean agenda porque otras se hacen *dentro* de ellas: el alquiler de bicis
+son 4 h, pero esas horas las ocupan el Vondelpark y el Jordaan, que se recorren justamente en
+bici. Para eso existe `scheduleHours` en `Idea`: las horas que de verdad ocupa el día, cuando
+no coinciden con su duración.
 
 ### Los planes
 
@@ -60,8 +79,10 @@ La configuración de Firebase está en [src/firebase.ts](src/firebase.ts) **a pr
 `apiKey` web de Firebase no es un secreto: viaja en el bundle del navegador y no se puede
 esconder. Lo que protege los datos son las reglas de Firestore.
 
-**Hay que publicar [firestore.rules](firestore.rules) una vez**, o la app no podrá guardar nada
-(saldrá un aviso de `permission-denied` y los votos se quedarán solo en cada navegador):
+**Hay que publicar [firestore.rules](firestore.rules)**, o la app no podrá guardar (saldrá un
+aviso en la propia web y los datos se quedarán solo en cada navegador). Hay que volver a
+publicarlas cada vez que el documento de voto gane un campo nuevo, porque las reglas usan
+`hasOnly` sobre la lista exacta de campos:
 
 ```bash
 npx firebase-tools deploy --only firestore:rules --project itinerario-amsterdam
@@ -70,8 +91,19 @@ npx firebase-tools deploy --only firestore:rules --project itinerario-amsterdam
 O pegando el contenido del archivo en **Firebase Console → Firestore → Reglas → Publicar**.
 
 Las reglas dejan leer y escribir a cualquiera con el enlace (somos cuatro amigos, no hay login),
-pero acotan mucho *qué* se puede escribir: solo los cinco campos esperados, solo en la colección
-de votos, los valores de voto solo pueden ser `yes`/`maybe`/`no`, y nadie puede borrar nada.
+pero acotan mucho *qué* se puede escribir: solo los seis campos esperados, solo en la colección
+de votos, los valores de voto solo pueden ser `yes`/`maybe`/`no`, los días del itinerario solo
+pueden ser los cuatro del viaje, y nadie puede borrar nada.
+
+Dos detalles del guardado que no son obvios:
+
+- Se escribe con **reemplazo completo, no `merge`**. Con `merge` los mapas se fusionan, así que
+  retirar un voto o sacar algo del itinerario no se propagaba: la clave desaparecía en local y
+  seguía viva en Firestore.
+- Los errores de **lectura y escritura se llevan por separado**. Firestore aplica las escrituras
+  en local antes de confirmarlas y, al rechazarlas, las revierte; esa reversión dispara otro
+  snapshot. Con un solo estado de error, el snapshot borraba el aviso de «no se ha guardado» a
+  los milisegundos y el fallo pasaba desapercibido.
 
 ## De dónde salen los datos
 
@@ -102,9 +134,10 @@ src/
 ├── data/ideas.ts       # el catálogo de 64 ideas: precios, horarios, avisos
 ├── data/plans.ts       # los 4 itinerarios completos y las horas reales de cada día
 ├── lib/scoring.ts      # recuento, estados (fijo/probable/...), presupuesto
+├── lib/itinerary.ts    # ritmo por dia, lo que se deja fuera, comparar rutas
 ├── hooks/useVotes.ts   # sincronización en tiempo real con Firestore
 ├── hooks/useIdentity.ts# quién soy, guardado en el navegador
-└── components/         # las cinco pestañas de la app
+└── components/         # las seis pestañas de la app
 ```
 
 Para añadir o quitar ideas basta con editar `src/data/ideas.ts`: todo lo demás se recalcula solo.

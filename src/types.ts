@@ -16,6 +16,13 @@ export interface Idea {
   price: number | null
   /** Duración aproximada en horas. null si no aplica. */
   hours: number | null
+  /**
+   * Horas que bloquea de verdad en la agenda del día, cuando no coincide con
+   * su duración. El alquiler de bicis son 4 h de alquiler, pero esas horas las
+   * ocupan el Vondelpark y el Jordaan, que se hacen justamente en bici: en la
+   * agenda solo cuenta ir a recogerlas y devolverlas.
+   */
+  scheduleHours?: number
   /** Frase corta de por qué merece la pena (o no). */
   pitch: string
   /** Datos duros: horarios, cómo llegar, avisos. */
@@ -45,6 +52,8 @@ export interface VoteDoc {
   emoji: string
   triage: Record<string, Vote>
   points: Record<string, number>
+  /** La ruta ideal de esta persona: a qué día asigna cada idea. */
+  itinerary?: Record<string, TripDay>
   updatedAt: number
 }
 

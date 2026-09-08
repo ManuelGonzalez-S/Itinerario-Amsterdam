@@ -173,6 +173,8 @@ export const IDEAS: Idea[] = [
     category: 'ciudad',
     price: 12,
     hours: 4,
+    // Las 4 h de alquiler se solapan con lo que se hace en bici.
+    scheduleHours: 0.5,
     pitch: 'Ámsterdam en bici es otra ciudad. Es barato y es LA experiencia local.',
     notes:
       'Unos 10-15 € por persona el medio día. La City Card incluye 4 horas de alquiler con un partner.',

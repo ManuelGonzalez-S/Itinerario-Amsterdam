@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db, TRIP_ID } from '../firebase'
-import type { Vote, VoteDoc, Voter } from '../types'
+import type { TripDay, Vote, VoteDoc, Voter } from '../types'
 
 const LOCAL_MIRROR = 'ams2026.mirror'
 
@@ -26,7 +26,12 @@ function writeMirror(d: VoteDoc) {
   }
 }
 
-const EMPTY: Omit<VoteDoc, 'name' | 'emoji'> = { triage: {}, points: {}, updatedAt: 0 }
+const EMPTY: Omit<VoteDoc, 'name' | 'emoji'> = {
+  triage: {},
+  points: {},
+  itinerary: {},
+  updatedAt: 0,
+}
 
 /**
  * Estado compartido de la votación. Escucha Firestore en tiempo real, así que
@@ -36,7 +41,13 @@ const EMPTY: Omit<VoteDoc, 'name' | 'emoji'> = { triage: {}, points: {}, updated
  */
 export function useVotes(voter: Voter | null) {
   const [remote, setRemote] = useState<Record<string, VoteDoc>>({})
-  const [error, setError] = useState<string | null>(null)
+  // Lectura y escritura se llevan por separado a propósito. Firestore aplica
+  // las escrituras en local antes de confirmarlas y, cuando el servidor las
+  // rechaza, las revierte: esa reversión dispara otro snapshot. Con un solo
+  // estado de error, ese snapshot borraba el aviso de "no se ha guardado" a
+  // los milisegundos y el fallo pasaba desapercibido.
+  const [readError, setReadError] = useState<string | null>(null)
+  const [writeError, setWriteError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [mine, setMine] = useState<VoteDoc | null>(null)
   const flushTimer = useRef<number | null>(null)
@@ -52,11 +63,11 @@ export function useVotes(voter: Voter | null) {
           next[d.id] = d.data() as VoteDoc
         })
         setRemote(next)
-        setError(null)
+        setReadError(null)
         setLoading(false)
       },
       (err) => {
-        setError(
+        setReadError(
           err.code === 'permission-denied'
             ? 'Firestore ha rechazado la lectura. Hay que publicar las reglas de firestore.rules en la consola de Firebase.'
             : `No se puede conectar con Firestore (${err.code}). Tus votos se guardan en este navegador mientras tanto.`,
@@ -83,6 +94,7 @@ export function useVotes(voter: Voter | null) {
         emoji: voter.emoji,
         triage: base?.triage ?? {},
         points: base?.points ?? {},
+        itinerary: base?.itinerary ?? {},
         updatedAt: base?.updatedAt ?? 0,
       }
     })
@@ -99,11 +111,25 @@ export function useVotes(voter: Voter | null) {
       flushTimer.current = window.setTimeout(() => {
         const payload = pending.current
         if (!payload) return
-        setDoc(doc(votesCollection(), voter.id), payload, { merge: true }).catch((err) => {
-          setError(
-            `No se ha podido guardar en Firestore (${err.code ?? 'error'}). Tus votos siguen en este navegador.`,
-          )
-        })
+
+        // Reemplazo completo, no merge. Con merge los mapas se fusionan, así
+        // que quitar un voto o sacar algo del itinerario no se propagaba: la
+        // clave desaparecía en local y seguía viva en Firestore.
+        // Si no hay ruta, el campo `itinerary` ni se manda: así la votación
+        // normal sigue funcionando aunque las reglas nuevas no estén publicadas.
+        const hasRoute = Object.keys(payload.itinerary ?? {}).length > 0
+        const { itinerary, ...rest } = payload
+        const body = hasRoute ? { ...rest, itinerary } : rest
+
+        setDoc(doc(votesCollection(), voter.id), body)
+          .then(() => setWriteError(null))
+          .catch((err) => {
+            setWriteError(
+              err.code === 'permission-denied' && hasRoute
+                ? 'Tu ruta NO se está guardando: Firestore rechaza el campo del itinerario porque faltan por publicar las reglas actualizadas de firestore.rules. De momento solo vive en este navegador.'
+                : `No se ha podido guardar en Firestore (${err.code ?? 'error'}). Tus cambios siguen en este navegador.`,
+            )
+          })
       }, 350)
     },
     [voter],
@@ -155,6 +181,27 @@ export function useVotes(voter: Voter | null) {
     apply((d) => ({ ...d, points: {} }))
   }, [apply])
 
+  /** Coloca una idea en un día, o la saca de la ruta si day es null. */
+  const setItineraryDay = useCallback(
+    (ideaId: string, day: TripDay | null) => {
+      apply((d) => {
+        const itinerary = { ...(d.itinerary ?? {}) }
+        if (day === null) delete itinerary[ideaId]
+        else itinerary[ideaId] = day
+        return { ...d, itinerary }
+      })
+    },
+    [apply],
+  )
+
+  /** Sustituye la ruta entera, para arrancar desde uno de los planes. */
+  const replaceItinerary = useCallback(
+    (next: Record<string, TripDay>) => {
+      apply((d) => ({ ...d, itinerary: { ...next } }))
+    },
+    [apply],
+  )
+
   // Todos los votos, con los míos siempre en su versión más fresca.
   const allDocs = useMemo(() => {
     const merged: Record<string, VoteDoc> = { ...remote }
@@ -173,9 +220,12 @@ export function useVotes(voter: Voter | null) {
     mine: mine ?? { name: voter?.name ?? '', emoji: voter?.emoji ?? '', ...EMPTY },
     pointsSpent,
     loading,
-    error,
+    // La escritura manda: si no se está guardando, eso es lo urgente de saber.
+    error: writeError ?? readError,
     setTriage,
     setPoints,
     resetPoints,
+    setItineraryDay,
+    replaceItinerary,
   }
 }

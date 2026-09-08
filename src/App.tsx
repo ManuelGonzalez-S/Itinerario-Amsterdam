@@ -8,12 +8,14 @@ import { PhaseTriage } from './components/PhaseTriage'
 import { PhasePoints } from './components/PhasePoints'
 import { Results } from './components/Results'
 import { PhasePlans } from './components/PhasePlans'
+import { PhaseMyRoute } from './components/PhaseMyRoute'
 import { Briefing } from './components/Briefing'
 
-type Tab = 'planes' | 'votar' | 'puntos' | 'resultados' | 'info'
+type Tab = 'planes' | 'ruta' | 'votar' | 'puntos' | 'resultados' | 'info'
 
 const TABS: { id: Tab; label: string; emoji: string; hint: string }[] = [
   { id: 'planes', label: 'Planes', emoji: '🗺️', hint: 'Los 4 planes a debate' },
+  { id: 'ruta', label: 'Mi ruta', emoji: '✏️', hint: 'Tu itinerario ideal' },
   { id: 'votar', label: 'Votar', emoji: '🗳️', hint: 'Sí, quizás o no' },
   { id: 'puntos', label: 'Puntos', emoji: '💯', hint: 'Reparte tus 100' },
   { id: 'resultados', label: 'Resultados', emoji: '🏆', hint: 'Cómo va la cosa' },
@@ -58,6 +60,15 @@ export default function App() {
 
       {tab === 'planes' && (
         <PhasePlans mine={votes.mine} docs={votes.allDocs} onVote={votes.setTriage} />
+      )}
+      {tab === 'ruta' && (
+        <PhaseMyRoute
+          mine={votes.mine}
+          docs={votes.allDocs}
+          tallies={tallies}
+          onSetDay={votes.setItineraryDay}
+          onReplace={votes.replaceItinerary}
+        />
       )}
       {tab === 'votar' && (
         <PhaseTriage
