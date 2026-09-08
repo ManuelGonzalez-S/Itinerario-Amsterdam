@@ -83,10 +83,10 @@ export function PhasePoints({ mine, spent, onSetPoints, onReset, onGoTriage }: P
         <div className="mt-2 flex items-center justify-between">
           <p className="text-xs text-slate-500">
             {left < 0
-              ? `Te has pasado por ${-left}. Quita puntos de algo.`
+              ? `Te has pasado por ${-left}.`
               : left === 0
-                ? '¡Perfecto! Has repartido los 100.'
-                : 'Dale más puntos a lo que de verdad quieres hacer.'}
+                ? '¡Listo, los 100 repartidos!'
+                : 'Más puntos a lo que más quieras.'}
           </p>
           {spent > 0 && (
             <button
@@ -125,7 +125,7 @@ export function PhasePoints({ mine, spent, onSetPoints, onReset, onGoTriage }: P
                   onClick={() => onSetPoints(idea.id, Math.max(0, value - POINTS_STEP))}
                   disabled={value === 0}
                   aria-label={`Quitar puntos a ${idea.title}`}
-                  className="grid size-9 place-items-center rounded-lg bg-white/5 text-lg text-slate-300 hover:bg-white/10 disabled:opacity-25"
+                  className="grid size-11 place-items-center rounded-lg bg-white/5 text-lg text-slate-300 hover:bg-white/10 disabled:opacity-25"
                 >
                   −
                 </button>
@@ -139,7 +139,7 @@ export function PhasePoints({ mine, spent, onSetPoints, onReset, onGoTriage }: P
                 <button
                   onClick={() => onSetPoints(idea.id, value + POINTS_STEP)}
                   aria-label={`Dar puntos a ${idea.title}`}
-                  className="grid size-9 place-items-center rounded-lg bg-white/5 text-lg text-slate-300 hover:bg-white/10"
+                  className="grid size-11 place-items-center rounded-lg bg-white/5 text-lg text-slate-300 hover:bg-white/10"
                 >
                   +
                 </button>

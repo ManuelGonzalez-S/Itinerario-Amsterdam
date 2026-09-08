@@ -17,5 +17,10 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 
-/** Identificador del viaje: permite reutilizar la app para otro destino. */
-export const TRIP_ID = 'amsterdam-2026-09'
+/**
+ * Identificador del viaje. En desarrollo apunta a un viaje aparte para que
+ * probar la app nunca escriba en la votacion de verdad: en una prueba se colo
+ * un votante falso en la coleccion real y hubo que borrarlo a mano, porque las
+ * reglas (con razon) no permiten borrar votos.
+ */
+export const TRIP_ID = import.meta.env.DEV ? 'amsterdam-2026-09-dev' : 'amsterdam-2026-09'

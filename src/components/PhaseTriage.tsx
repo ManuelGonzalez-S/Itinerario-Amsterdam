@@ -53,10 +53,9 @@ export function PhaseTriage({ tallies, mine, docs, onVote }: Props) {
             />
           </div>
         </div>
-        <p className="text-xs leading-relaxed text-slate-500 lg:text-sm">
-          Pasa por todas y marca sin pensarlo mucho. Un <strong className="text-rose-300">No</strong>{' '}
-          es un veto real: lo que alguien no quiere, no se hace. Puedes cambiar tu voto cuando
-          quieras.
+        <p className="text-sm text-slate-400">
+          Marca sin pensarlo mucho. Un <strong className="text-rose-300">No</strong> es un veto: lo
+          que alguien no quiere, no se hace.
         </p>
       </div>
 

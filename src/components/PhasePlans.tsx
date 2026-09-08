@@ -25,19 +25,22 @@ export function PhasePlans({ mine, docs, onVote }: Props) {
   return (
     <div className="space-y-4">
       <section className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <h2 className="text-sm font-bold text-white lg:text-base">
-          Cuatro planes completos, sacados de vuestros votos
-        </h2>
-        <p className="mt-2 text-xs leading-relaxed text-slate-400 lg:text-sm">
-          Ninguno incluye nada que tenga un solo <strong className="text-rose-300">no</strong>: eso
-          deja fuera Utrecht y World Press Photo, además de las 23 descartadas. Todos respetan los
-          horarios reales (el mercado Albert Cuyp cierra los domingos, el festival del NDSM solo es
-          sábado y domingo, el Van Gogh abre hasta las 21:00 solo los viernes).
+        <h2 className="text-base font-bold text-white">Cuatro propuestas</h2>
+        <p className="mt-1 text-sm text-slate-400">
+          Marca las que te valgan. Puedes marcar varias.
         </p>
-        <p className="mt-2 text-xs leading-relaxed text-slate-500 lg:text-sm">
-          Marca los que te valgan. No hace falta elegir uno solo: si dos te sirven, dilo, que así se
-          ve antes por dónde hay acuerdo.
-        </p>
+        <details className="mt-2">
+          <summary className="cursor-pointer text-xs text-slate-500 hover:text-slate-300">
+            Cómo se han hecho
+          </summary>
+          <p className="mt-2 text-xs leading-relaxed text-slate-400">
+            Salen de vuestros votos y ninguna incluye nada con un solo{' '}
+            <strong className="text-rose-300">no</strong>, así que quedan fuera Utrecht y World
+            Press Photo además de las 23 descartadas. Respetan los horarios reales: Albert Cuyp
+            cierra los domingos, el festival del NDSM solo es sábado y domingo, y el Van Gogh abre
+            hasta las 21:00 solo los viernes.
+          </p>
+        </details>
       </section>
 
       {leader && (

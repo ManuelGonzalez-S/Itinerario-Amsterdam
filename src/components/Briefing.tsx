@@ -99,28 +99,6 @@ export function Briefing() {
         </p>
       </section>
 
-      <section className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-        <h2 className="text-sm font-bold text-white lg:text-base">💡 Cómo funciona esta votación</h2>
-        <ol className="mt-3 space-y-2 text-xs leading-relaxed text-slate-300 lg:text-sm">
-          <li>
-            <strong className="text-white">1. Votar.</strong> Pasa por las ideas con Sí, Quizás o
-            No. Un No es un veto: lo que alguien no quiere, no se hace.
-          </li>
-          <li>
-            <strong className="text-white">2. Puntos.</strong> Reparte 100 puntos entre lo que has
-            marcado Sí o Quizás. Esto es lo que de verdad ordena la lista, porque a casi todo se
-            le dice sí.
-          </li>
-          <li>
-            <strong className="text-white">3. Resultados.</strong> Lo que tiene cuatro síes queda
-            fijo. El resto se ordena por puntos, y ahí se ve si cabe en cuatro días y cuánto
-            cuesta.
-          </li>
-        </ol>
-        <p className="mt-3 text-xs leading-relaxed text-slate-500">
-          Cuando la votación esté cerrada, esta misma web se convierte en el itinerario día a día.
-        </p>
-      </section>
     </div>
   )
 }

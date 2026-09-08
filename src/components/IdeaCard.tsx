@@ -126,7 +126,7 @@ export function IdeaCard({ tally, myVote, docs, onVote }: Props) {
             key={b.vote}
             onClick={() => onVote(myVote === b.vote ? null : b.vote)}
             aria-pressed={myVote === b.vote}
-            className={`rounded-xl py-2.5 text-sm font-semibold transition ${
+            className={`min-h-11 rounded-xl py-2.5 text-sm font-semibold transition ${
               myVote === b.vote ? b.on : 'bg-white/5 text-slate-400 hover:bg-white/10'
             }`}
           >

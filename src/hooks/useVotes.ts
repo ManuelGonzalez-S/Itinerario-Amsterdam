@@ -52,6 +52,10 @@ export function useVotes(voter: Voter | null) {
   const [mine, setMine] = useState<VoteDoc | null>(null)
   const flushTimer = useRef<number | null>(null)
   const pending = useRef<VoteDoc | null>(null)
+  // ¿Ha tocado ya algo el usuario en esta sesión? Mientras no lo haya hecho,
+  // lo que llegue de Firestore manda. En cuanto edita, lo suyo manda y ya no
+  // se pisa con los snapshots.
+  const dirty = useRef(false)
 
   // Suscripción en tiempo real a todos los votos del viaje.
   useEffect(() => {
@@ -79,33 +83,40 @@ export function useVotes(voter: Voter | null) {
   }, [])
 
   // Al identificarnos, partimos de lo que haya en la nube o de la copia local.
+  //
+  // Esto depende de `remote` a propósito. Antes solo corría al montar y hacía
+  // "si ya hay estado, no toques": como al montar el snapshot aún no ha
+  // llegado, el estado quedaba vacío para siempre y la primera pulsación
+  // guardaba ese vacío encima de los votos buenos. Con reemplazo completo eso
+  // borraba los 64 votos de esa persona. El guardia ahora es `dirty`, no la
+  // existencia de estado.
   useEffect(() => {
     if (!voter) {
       setMine(null)
+      dirty.current = false
       return
     }
+    if (dirty.current) return
     const fromCloud = remote[voter.id]
     const mirror = readMirror()
     const base = fromCloud ?? (mirror?.name === voter.name ? mirror : null)
-    setMine((current) => {
-      if (current) return current
-      return {
-        name: voter.name,
-        emoji: voter.emoji,
-        triage: base?.triage ?? {},
-        points: base?.points ?? {},
-        itinerary: base?.itinerary ?? {},
-        updatedAt: base?.updatedAt ?? 0,
-      }
+    setMine({
+      name: voter.name,
+      emoji: voter.emoji,
+      triage: base?.triage ?? {},
+      points: base?.points ?? {},
+      itinerary: base?.itinerary ?? {},
+      updatedAt: base?.updatedAt ?? 0,
     })
-    // Solo queremos rehidratar al identificarnos o al llegar el primer snapshot,
-    // no en cada cambio remoto: eso pisaría lo que estemos votando ahora mismo.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voter?.id, loading])
+  }, [voter, remote])
 
   const flush = useCallback(
     (next: VoteDoc) => {
       if (!voter) return
+      // Segunda red: si todavía no sabemos qué hay en la nube, no escribimos.
+      // La app no deja interactuar hasta entonces, pero un reemplazo completo
+      // con estado incompleto borra datos, así que mejor sobrar que faltar.
+      if (loading) return
       pending.current = next
       if (flushTimer.current) window.clearTimeout(flushTimer.current)
       flushTimer.current = window.setTimeout(() => {
@@ -132,11 +143,12 @@ export function useVotes(voter: Voter | null) {
           })
       }, 350)
     },
-    [voter],
+    [voter, loading],
   )
 
   const apply = useCallback(
     (mutate: (d: VoteDoc) => VoteDoc) => {
+      dirty.current = true
       setMine((current) => {
         if (!current) return current
         const next = { ...mutate(current), updatedAt: Date.now() }
