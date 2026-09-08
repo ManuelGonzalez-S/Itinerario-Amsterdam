@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Category, Tally, Vote, VoteDoc } from '../types'
 import { CATEGORIES, IDEAS } from '../data/ideas'
 import { IdeaCard } from './IdeaCard'
+import { countIdeaVotes } from '../lib/scoring'
 
 interface Props {
   tallies: Tally[]
@@ -17,7 +18,7 @@ export function PhaseTriage({ tallies, mine, docs, onVote }: Props) {
   const [category, setCategory] = useState<Category | 'todo'>('todo')
   const [onlyPending, setOnlyPending] = useState(false)
 
-  const voted = Object.keys(mine.triage).length
+  const voted = countIdeaVotes(mine.triage)
   const total = IDEAS.length
   const pct = Math.round((voted / total) * 100)
 

@@ -1,17 +1,19 @@
 import { useMemo, useState } from 'react'
 import { useIdentity } from './hooks/useIdentity'
 import { useVotes } from './hooks/useVotes'
-import { tallyAll, POINTS_BUDGET } from './lib/scoring'
+import { tallyAll, POINTS_BUDGET, countIdeaVotes } from './lib/scoring'
 import { IDEAS } from './data/ideas'
 import { WhoAreYou } from './components/WhoAreYou'
 import { PhaseTriage } from './components/PhaseTriage'
 import { PhasePoints } from './components/PhasePoints'
 import { Results } from './components/Results'
+import { PhasePlans } from './components/PhasePlans'
 import { Briefing } from './components/Briefing'
 
-type Tab = 'votar' | 'puntos' | 'resultados' | 'info'
+type Tab = 'planes' | 'votar' | 'puntos' | 'resultados' | 'info'
 
 const TABS: { id: Tab; label: string; emoji: string; hint: string }[] = [
+  { id: 'planes', label: 'Planes', emoji: '🗺️', hint: 'Los 4 planes a debate' },
   { id: 'votar', label: 'Votar', emoji: '🗳️', hint: 'Sí, quizás o no' },
   { id: 'puntos', label: 'Puntos', emoji: '💯', hint: 'Reparte tus 100' },
   { id: 'resultados', label: 'Resultados', emoji: '🏆', hint: 'Cómo va la cosa' },
@@ -35,11 +37,11 @@ function countdownLabel(days: number): string {
 export default function App() {
   const { voter, identify, forget } = useIdentity()
   const votes = useVotes(voter)
-  const [tab, setTab] = useState<Tab>('votar')
+  const [tab, setTab] = useState<Tab>('planes')
 
   const tallies = useMemo(() => tallyAll(votes.allDocs), [votes.allDocs])
   const days = daysUntilTrip()
-  const votedCount = Object.keys(votes.mine.triage).length
+  const votedCount = countIdeaVotes(votes.mine.triage)
   const votedPct = Math.round((votedCount / IDEAS.length) * 100)
 
   if (!voter) {
@@ -54,6 +56,9 @@ export default function App() {
         </div>
       )}
 
+      {tab === 'planes' && (
+        <PhasePlans mine={votes.mine} docs={votes.allDocs} onVote={votes.setTriage} />
+      )}
       {tab === 'votar' && (
         <PhaseTriage
           tallies={tallies}

@@ -7,6 +7,7 @@ import {
   estimateBudget,
   estimateHours,
   formatEuro,
+  countIdeaVotes,
 } from '../lib/scoring'
 
 interface Props {
@@ -109,7 +110,7 @@ export function Results({ tallies, docs }: Props) {
               <span key={d.name} className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">
                 {d.emoji} {d.name}
                 <span className="ml-1.5 text-slate-500">
-                  {Object.keys(d.triage ?? {}).length} votos
+                  {countIdeaVotes(d.triage)} votos
                 </span>
               </span>
             ))}

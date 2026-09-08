@@ -4,9 +4,9 @@ Web del viaje para cuatro personas. Ahora mismo está en **modo votación**: ent
 decidimos qué queremos hacer y, cuando esté cerrado, esta misma web se convierte en el
 itinerario día a día.
 
-## Cómo se vota
+## Cómo se decide
 
-Tres pasos, pensados para hacerse en el móvil en diez minutos:
+Cuatro pasos, pensados para hacerse en el móvil:
 
 1. **Votar** — pasas por las 64 ideas y marcas **Sí / Quizás / No**. Un *No* es un veto de
    verdad: lo que alguien no quiere, no se hace.
@@ -14,9 +14,32 @@ Tres pasos, pensados para hacerse en el móvil en diez minutos:
    ordena la lista, porque en el triaje casi todo acaba en «sí, vale».
 3. **Resultados** — lo que tiene cuatro síes queda **Fijo**. El resto se ordena por puntos, y se
    ve en directo cuánto costaría por persona y si cabe en cuatro días.
+4. **Planes** — cuatro itinerarios completos hora a hora, generados a partir de los votos
+   reales. Se marcan igual (Me vale / Con cambios / No) y sirven para debatir sobre algo
+   concreto en vez de sobre una lista de 64 cosas.
 
 No hay registro ni contraseñas: se entra con el nombre, que sirve para saber de quién es cada
 voto. Todo se sincroniza en tiempo real entre los cuatro.
+
+### Los planes
+
+Están en [src/data/plans.ts](src/data/plans.ts) y todos cumplen tres reglas:
+
+- **Ni una sola idea con un «no» de alguien.** Un veto es un veto, así que ningún plan puede
+  incluir algo que alguien haya rechazado.
+- **Respetan los horarios reales**: Albert Cuyp cierra los domingos, el festival del NDSM solo
+  es sábado y domingo, el Van Gogh abre hasta las 21:00 solo los viernes, NEMO cierra a las
+  17:30.
+- **Se comparan con las horas que hay de verdad**, no con un número redondo: el jueves se llega
+  a las 11:00 y el domingo hay vuelo, así que cada día tiene su propia ventana
+  (`DAY_HOURS` en `plans.ts`). El aviso de «no cabe» salta por día concreto.
+
+El coste que muestra cada plan va desglosado entre lo que se votó (entradas, mercados, bares) y
+lo que no se votó pero hay que pagar igual (comidas libres y traslados).
+
+**Nota de implementación:** los votos de planes se guardan en el mismo mapa `triage` que las
+ideas, con claves `plan-*`. Es a propósito: así no hace falta cambiar ni republicar las reglas
+de Firestore. `countIdeaVotes()` los filtra para que el progreso siga siendo sobre 64 ideas.
 
 ## Puesta en marcha
 
@@ -77,10 +100,11 @@ mercado Albert Cuyp **cierra los domingos**.
 ```
 src/
 ├── data/ideas.ts       # el catálogo de 64 ideas: precios, horarios, avisos
+├── data/plans.ts       # los 4 itinerarios completos y las horas reales de cada día
 ├── lib/scoring.ts      # recuento, estados (fijo/probable/...), presupuesto
 ├── hooks/useVotes.ts   # sincronización en tiempo real con Firestore
 ├── hooks/useIdentity.ts# quién soy, guardado en el navegador
-└── components/         # las cuatro pestañas de la app
+└── components/         # las cinco pestañas de la app
 ```
 
 Para añadir o quitar ideas basta con editar `src/data/ideas.ts`: todo lo demás se recalcula solo.
