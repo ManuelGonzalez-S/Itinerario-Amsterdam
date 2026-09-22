@@ -47,38 +47,46 @@ export default function App() {
           {dias > 1 ? `Quedan ${dias} días` : dias === 1 ? 'Es mañana' : '¡Ya estamos!'}
         </p>
         <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-slate-400">
-          Tres itinerarios completos, sacados de lo que votamos los cuatro. Ninguno mete nada que
-          alguien haya rechazado. <strong className="text-slate-200">Elegid uno por el grupo.</strong>
+          Tres itinerarios completos, sacados de lo que votamos los cuatro y de las
+          aportaciones del grupo. Ninguno mete nada que alguien haya rechazado.{' '}
+          <strong className="text-slate-200">Elegid uno por el grupo.</strong>
         </p>
       </header>
 
-      {/* Lo urgente, antes que nada */}
-      <section className="rounded-2xl border border-rose-500/30 bg-rose-950/40 p-4 sm:p-5">
-        <h2 className="text-base font-bold text-rose-200">⚠️ Esto no puede esperar</h2>
-        <p className="mt-2 text-sm leading-relaxed text-rose-100/90">
-          La <strong>Casa de Ana Frank</strong> está en los tres planes y quedan {dias} días. Solo
-          se vende en su web, no hay taquilla ni lista de espera, y las entradas de nuestras fechas
-          salieron el <strong>11 de agosto</strong>. Hay que mirar hoy: si queda algo serán horas de
-          noche.
+      {/* Lo que ya está decidido y no se discute */}
+      <section className="rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:p-5">
+        <h2 className="text-base font-bold text-white">Lo que ya está cerrado</h2>
+        <ul className="mt-3 space-y-2.5 text-sm leading-relaxed">
+          <li className="flex gap-2.5">
+            <span aria-hidden>✅</span>
+            <span className="text-slate-300">
+              <strong className="text-emerald-300">Museo Van Gogh reservado:</strong> viernes 25 a
+              las <strong className="text-white">11:15</strong>. Es el único punto fijo del viaje, y
+              los tres planes se construyen alrededor de él.
+            </span>
+          </li>
+          <li className="flex gap-2.5">
+            <span aria-hidden>❌</span>
+            <span className="text-slate-300">
+              <strong className="text-rose-300">Casa de Ana Frank:</strong> sin entradas para
+              nuestras fechas, así que sale de los tres planes.
+            </span>
+          </li>
+          <li className="flex gap-2.5">
+            <span aria-hidden>❌</span>
+            <span className="text-slate-300">
+              <strong className="text-rose-300">Copa en la azotea del jueves:</strong> fuera, por
+              decisión del grupo.
+            </span>
+          </li>
+        </ul>
+        <p className="mt-3 rounded-xl border border-white/10 bg-black/25 px-3.5 py-2.5 text-xs leading-relaxed text-slate-400">
+          Sobre Ana Frank: varias webs de turismo afirman que el museo libera un 20 % del aforo a
+          las 09:00 del mismo día.{' '}
+          <strong className="text-slate-200">Su web oficial no dice nada de eso</strong>, así que no
+          contéis con ello. Ahora bien, mirarlo a las 09:00 cada mañana cuesta dos minutos y no se
+          pierde nada por intentarlo.
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <a
-            href="https://www.annefrank.org/en/museum/tickets/"
-            target="_blank"
-            rel="noreferrer"
-            className="min-h-11 rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-400"
-          >
-            Comprar Ana Frank ↗
-          </a>
-          <a
-            href="https://www.vangoghmuseum.nl/en/visit/tickets-and-ticket-prices"
-            target="_blank"
-            rel="noreferrer"
-            className="min-h-11 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/20"
-          >
-            Van Gogh (plan B) ↗
-          </a>
-        </div>
       </section>
 
       {/* Comparación de un vistazo */}
@@ -115,6 +123,35 @@ export default function App() {
       {/* El plan elegido, al detalle */}
       <PlanDetalle key={plan.plan.id} plan={plan} />
 
+      {/* Lo que aportó el grupo y no he podido colocar */}
+      <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
+        <h2 className="text-sm font-bold text-white">
+          Dos ideas del grupo que no están en ningún plan
+        </h2>
+        <p className="mt-1 text-xs leading-relaxed text-slate-400">
+          No las descarto: es que no he podido confirmar dónde están ni cuándo abren, y con el
+          viaje encima prefiero decirlo a mandaros a una puerta cerrada.
+        </p>
+        <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-slate-300">
+          <li>
+            <strong className="text-white">Brittons.</strong> No encontré dirección ni horarios
+            fiables. Si alguien sabe dónde está, entra fácil como desayuno en vez de Pantopia
+            cualquier mañana.
+          </li>
+          <li>
+            <strong className="text-white">Secondlife, Just Waldo y Love Storie Archive.</strong>{' '}
+            Tampoco pude confirmarlas. Ojo: muchas tiendas vintage de Ámsterdam abren sobre las
+            12:00 y bastantes cierran los lunes. El vintage que sí está localizado es{' '}
+            <strong className="text-white">Millesime</strong> (Leidsestraat 64-66, tres plantas),
+            que va en el plan B.
+          </li>
+        </ul>
+        <p className="mt-3 text-xs text-slate-500">
+          La zona de las Nueve Callecitas, que está en los planes A y B el domingo, es justo el
+          barrio de las tiendas pequeñas: ahí caen solas si os apetece.
+        </p>
+      </section>
+
       {/* Copiar para el grupo */}
       <button
         onClick={copiar}
@@ -148,10 +185,9 @@ export default function App() {
         <div className="mt-3 space-y-3 text-sm leading-relaxed text-slate-400">
           <p>
             <strong className="text-slate-200">Abonos.</strong> El abono GVB de 72 h cuesta 21,50 €
-            y es solo transporte. La I amsterdam City Card sale desde 67 € por 24 h e incluye
-            transporte, un crucero y más de 70 museos, pero deja fuera justo el Van Gogh y Ana
-            Frank. El Museumkaart (75 €) sí los incluye, pero salió descartado por unanimidad en la
-            votación. Con el Rijksmuseum también descartado, lo que sale a cuenta es{' '}
+            y es solo transporte. La I amsterdam City Card sale desde 67 € por 24 h, pero deja fuera
+            el Van Gogh, que además ya está pagado. Con el Rijksmuseum y el Museumkaart descartados
+            en la votación y sin Ana Frank, la cuenta está clara:{' '}
             <strong className="text-slate-200">GVB + entradas sueltas</strong>.
           </p>
           <p>

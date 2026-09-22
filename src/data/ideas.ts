@@ -560,6 +560,104 @@ export const IDEAS: Idea[] = [
     pitch: 'Plan tonto de grupo para una noche. Funciona muy bien siendo 4.',
   },
 
+  // ─────────────── APORTACIONES DEL GRUPO (22 de septiembre) ───────────────
+  {
+    id: 'pantopia',
+    title: 'Pantopia (pastelería)',
+    category: 'comida',
+    price: 8,
+    hours: 1,
+    pitch: 'Bollería dulce y salada de nivel, expuesta como si fuera una galería de arte.',
+    notes:
+      'Está junto al Rijksmuseum, o sea a cinco minutos del Van Gogh: es el desayuno perfecto antes de la entrada de las 11:15 del viernes.',
+  },
+  {
+    id: 'saint-jean',
+    title: 'Saint-Jean (panadería y café)',
+    category: 'comida',
+    price: 8,
+    hours: 0.75,
+    pitch: 'Bollería 100 % vegetal y café de especialidad. Pequeño, con mostrador y un altillo.',
+    notes: 'En el Jordaan, así que cae de camino en el paseo por el barrio.',
+    url: 'https://www.saintjean.nl/',
+  },
+  {
+    id: 'cafe-coos',
+    title: 'Café COOS',
+    category: 'comida',
+    price: 18,
+    hours: 1.5,
+    pitch: 'Clásicos holandeses (ontbijtkoek, stamppot) puestos al día, en un local de esquina.',
+    notes:
+      'Bilderdijkkade 25-H, en Amsterdam-West sobre el Kwakersplein. A un paseo corto de Foodhallen, así que encaja con el día de Oud-West.',
+  },
+  {
+    id: 'brittons',
+    title: 'Brittons (desayuno)',
+    category: 'comida',
+    price: 15,
+    hours: 1,
+    pitch: 'Recomendación del grupo para desayunar.',
+    warning:
+      'Es el único sitio de la lista que no pude contrastar: no encontré dirección ni horarios fiables. Antes de ir, comprobadlo en Google Maps.',
+  },
+  {
+    id: 'van-dobben',
+    title: 'Eetsalon Van Dobben (croquetas)',
+    category: 'comida',
+    price: 10,
+    hours: 0.75,
+    pitch:
+      'Croquetas de ternera desde 1945, de pie en la barra. Cutre por fuera e institución por dentro.',
+    notes:
+      'Korte Reguliersdwarsstraat 5-9, junto a Rembrandtplein y a dos pasos del mercado de flores. Se pide en el mostrador y no aceptan reservas: solo entrar.',
+    url: 'https://eetsalonvandobben.nl/',
+  },
+  {
+    id: 'de-tros',
+    title: 'De Tros (cena)',
+    category: 'comida',
+    price: 30,
+    hours: 2,
+    pitch:
+      'Café de barrio con cocina de verdad: desde una smash burger en la barra hasta pescado con una buena copa de vino.',
+    notes:
+      'Linnaeusstraat 63H, en Amsterdam-Oost. Está cerca de la cervecería del molino, así que las dos cosas caen la misma noche.',
+  },
+  {
+    id: 'booth-club',
+    title: 'Booth Club (fotomatón analógico)',
+    category: 'ciudad',
+    price: 6,
+    hours: 0.25,
+    pitch:
+      'Fotomatones de verdad, de 70 a 100 años, con química de revelado. Cuatro fotos por tira y el mejor recuerdo del viaje.',
+    notes:
+      'Raamsteeg 2, literalmente al lado de la plaza Spui y de las patatas de Vleminckx: las dos cosas se hacen del tirón. 6 € la tira en blanco y negro. Tienen otra sede, el Boothclub Garage, en Prinsengracht.',
+    url: 'https://boothclub.eu/',
+  },
+  {
+    id: 'millesime',
+    title: 'Millesime Collection (vintage de lujo)',
+    category: 'ciudad',
+    price: 0,
+    hours: 1,
+    pitch: 'Tres plantas de vintage de lujo: Valentino, Moncler y también denim y básicos.',
+    notes:
+      'Leidsestraat 64-66, justo en la calle que baja del centro hacia Leidseplein y el Museumplein. Entrar es gratis.',
+    url: 'https://www.millesimecollection.com/en',
+  },
+  {
+    id: 'ruta-vintage',
+    title: 'Ruta vintage: Secondlife, Just Waldo y Love Storie Archive',
+    category: 'ciudad',
+    price: 0,
+    hours: 2,
+    pitch: 'Las otras tres tiendas vintage de la lista del grupo, en una sola vuelta.',
+    warning:
+      'No pude confirmar direcciones ni horarios de estas tres. Muchas tiendas vintage de Ámsterdam abren tarde (sobre las 12:00) y bastantes cierran los lunes. Hay que mirarlas en Google Maps antes de ir.',
+  },
+
   // ─────────────────────── DECISIONES DE GRUPO ───────────────────────
   {
     id: 'dec-city-card',

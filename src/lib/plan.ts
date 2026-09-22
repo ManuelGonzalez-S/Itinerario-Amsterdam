@@ -98,6 +98,15 @@ const CORTO: Record<string, string> = {
   'van-gogh': 'VAN GOGH (abre hasta las 21h)',
   nemo: 'NEMO',
   haarlem: 'HAARLEM (medio día)',
+  pantopia: 'desayuno en Pantopia',
+  'saint-jean': 'café en Saint-Jean',
+  'cafe-coos': 'Café COOS',
+  brittons: 'Brittons',
+  'van-dobben': 'croquetas de Van Dobben',
+  'de-tros': 'cena en De Tros',
+  'booth-club': 'fotomatón del Booth Club',
+  millesime: 'vintage en Millesime',
+  'ruta-vintage': 'ruta vintage',
 }
 
 const DIA_CORTO: Record<TripDay, string> = {
@@ -122,7 +131,11 @@ export function whatsappText(): string {
   const cabecera = [
     '*ÁMSTERDAM 24-27 SEPT · tres planes, elegid uno* 🚲',
     '',
-    'Con lo que votamos los cuatro he montado tres itinerarios completos. Ninguno mete nada que alguien haya dicho que no. Los precios son por persona sin vuelos ni hotel, e incluyen entradas, comidas y transporte.',
+    '✅ *Van Gogh reservado:* viernes 25 a las 11:15. Los tres planes se montan alrededor de esa hora.',
+    '❌ *Ana Frank:* sin entradas, se cae de los tres.',
+    '❌ *La copa en la azotea del jueves:* fuera.',
+    '',
+    'Van también los sitios que pasasteis: Pantopia, Saint-Jean, Café COOS, Van Dobben, De Tros, el fotomatón del Booth Club y el vintage de Millesime. Precios por persona sin vuelos ni hotel, con entradas, comidas y transporte.',
   ].join('\n')
 
   const bloques = PLAN_SUMMARIES.map((s) => {
@@ -144,11 +157,11 @@ export function whatsappText(): string {
   })
 
   const cierre = [
-    '*¿A, B o C?* Si os vale uno pero cambiaríais algo, decidlo y lo ajusto.',
+    `*¿A, B o C?* Salimos en ${dias === 1 ? 'un día' : `${dias} días`}, así que decidid hoy y cierro lo que haga falta.`,
     '',
-    `⚠️ *Y esto no puede esperar:* Ana Frank está en los tres planes y quedan ${dias} días. Solo se vende en annefrank.org, no hay taquilla ni lista de espera, y las de nuestras fechas salieron el 11 de agosto. Miro hoy y compro lo que quede, aunque sea de noche.`,
+    'Lo único que quedaría por reservar es la cena del sábado en De Tros. Lo demás se hace sobre la marcha.',
     '',
-    'El Van Gogh (plan B) también se agota con más de una semana de antelación, así que si vamos a por el B lo digo ya.',
+    'Dos cosas de la lista se han quedado fuera porque no he podido confirmar dirección ni horarios: *Brittons* y las tiendas *Secondlife, Just Waldo y Love Storie Archive*. Si alguien las tiene localizadas, las metemos. La vintage que sí está confirmada es Millesime, en Leidsestraat.',
   ].join('\n')
 
   return [cabecera, ...bloques, cierre].join('\n\n———————————\n\n')
