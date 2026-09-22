@@ -27,6 +27,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'van-gogh',
+    address: 'Museumplein 6',
+    coords: [52.3584, 4.8811],
     title: 'Museo Van Gogh',
     category: 'museos',
     price: 25,
@@ -63,6 +65,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'moco',
+    address: 'Honthorststraat 20, Museumplein',
+    coords: [52.3587, 4.8828],
     title: 'Moco Museum (Banksy y arte urbano)',
     category: 'museos',
     price: 20,
@@ -74,6 +78,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'nemo',
+    address: 'Oosterdok 2',
+    coords: [52.3741, 4.9121],
     title: 'NEMO Science Museum',
     category: 'museos',
     price: 17.5,
@@ -159,6 +165,8 @@ export const IDEAS: Idea[] = [
   // ─────────────────────── CIUDAD Y EXPERIENCIAS ───────────────────────
   {
     id: 'crucero-canales',
+    address: 'Embarcaderos junto a Centraal o Damrak',
+    coords: [52.3765, 4.8985],
     title: 'Crucero por los canales',
     category: 'ciudad',
     price: 22,
@@ -169,6 +177,9 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'bici',
+    address: 'Alquileres por todo el centro',
+    coords: [52.3676, 4.8883],
+    coordsApprox: true,
     title: 'Alquilar bicis medio día',
     category: 'ciudad',
     price: 12,
@@ -181,6 +192,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'adam-lookout',
+    address: 'A\'DAM Toren, Overhoeksplein 5',
+    coords: [52.3839, 4.9018],
     title: 'A’DAM Lookout + columpio Over The Edge',
     category: 'ciudad',
     price: 16.5,
@@ -204,6 +217,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'brouwerij-ij',
+    address: 'Funenkade 7, junto al molino De Gooyer',
+    coords: [52.3667, 4.9267],
     title: 'Brouwerij ’t IJ (cervecería bajo un molino)',
     category: 'ciudad',
     price: 0,
@@ -214,6 +229,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'jordaan',
+    address: 'Jordaan y las Nueve Callecitas',
+    coords: [52.369, 4.8845],
     title: 'Paseo por el Jordaan y las Nueve Callecitas',
     category: 'ciudad',
     price: 0,
@@ -223,6 +240,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'albert-cuyp',
+    address: 'Albert Cuypstraat, De Pijp',
+    coords: [52.3555, 4.8925],
     title: 'Mercado Albert Cuyp (De Pijp)',
     category: 'ciudad',
     price: 0,
@@ -234,6 +253,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'ndsm',
+    address: 'NDSM-Werf, ferry gratis desde Centraal',
+    coords: [52.401, 4.893],
     title: 'NDSM Werf + festival Craft in Focus',
     category: 'ciudad',
     price: 0,
@@ -246,6 +267,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'vondelpark',
+    address: 'Vondelpark, entrada por Stadhouderskade',
+    coords: [52.3579, 4.8686],
     title: 'Vondelpark',
     category: 'ciudad',
     price: 0,
@@ -255,6 +278,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'bloemenmarkt',
+    address: 'Singel, entre Muntplein y Koningsplein',
+    coords: [52.3668, 4.8912],
     title: 'Bloemenmarkt (mercado de flores flotante)',
     category: 'ciudad',
     price: 0,
@@ -264,6 +289,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'free-tour',
+    address: 'Salidas desde la plaza Dam',
+    coords: [52.3731, 4.8926],
     title: 'Free walking tour del centro',
     category: 'ciudad',
     price: 15,
@@ -283,6 +310,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'barrio-rojo',
+    address: 'De Wallen, alrededor de Oudezijds Achterburgwal',
+    coords: [52.3735, 4.8985],
     title: 'Paseo nocturno por el Barrio Rojo',
     category: 'ciudad',
     price: 0,
@@ -315,6 +344,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'haarlem',
+    address: 'Haarlem, 15 min en tren desde Centraal',
+    coords: [52.3874, 4.6462],
     title: 'Haarlem',
     category: 'excursiones',
     price: 10,
@@ -385,6 +416,8 @@ export const IDEAS: Idea[] = [
   // ─────────────────────────── COMIDA ───────────────────────────
   {
     id: 'foodhallen',
+    address: 'Bellamyplein 51, Oud-West',
+    coords: [52.3654, 4.8688],
     title: 'Foodhallen (De Hallen)',
     category: 'comida',
     price: 25,
@@ -434,6 +467,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'vleminckx',
+    address: 'Voetboogstraat 33',
+    coords: [52.3676, 4.8895],
     title: 'Patatas fritas de Vleminckx',
     category: 'comida',
     price: 5,
@@ -443,6 +478,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'van-stapele',
+    address: 'Heisteeg 4',
+    coords: [52.36887, 4.88847],
     title: 'Van Stapele Koekmakerij',
     category: 'comida',
     price: 3,
@@ -491,6 +528,8 @@ export const IDEAS: Idea[] = [
   // ─────────────────────────── NOCHE ───────────────────────────
   {
     id: 'brown-cafe',
+    address: 'Café Chris, Bloemstraat 42',
+    coords: [52.3745, 4.8813],
     title: 'Ronda de brown cafés clásicos',
     category: 'noche',
     price: 15,
@@ -502,6 +541,9 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'coffeeshop',
+    address: 'Por el centro',
+    coords: [52.3715, 4.8935],
+    coordsApprox: true,
     title: 'Coffeeshop',
     category: 'noche',
     price: 15,
@@ -563,16 +605,21 @@ export const IDEAS: Idea[] = [
   // ─────────────── APORTACIONES DEL GRUPO (22 de septiembre) ───────────────
   {
     id: 'pantopia',
+    address: 'Kerkstraat 163',
+    coords: [52.3632, 4.888],
     title: 'Pantopia (pastelería)',
     category: 'comida',
     price: 8,
     hours: 1,
     pitch: 'Bollería dulce y salada de nivel, expuesta como si fuera una galería de arte.',
     notes:
-      'Está junto al Rijksmuseum, o sea a cinco minutos del Van Gogh: es el desayuno perfecto antes de la entrada de las 11:15 del viernes.',
+      'Kerkstraat 163, en plena zona de canales. Hasta el Van Gogh son unos 12 minutos andando, así que como desayuno antes de la entrada de las 11:15 funciona, pero saliendo con tiempo.',
   },
   {
     id: 'saint-jean',
+    address: 'Jordaan',
+    coords: [52.3745, 4.883],
+    coordsApprox: true,
     title: 'Saint-Jean (panadería y café)',
     category: 'comida',
     price: 8,
@@ -583,6 +630,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'cafe-coos',
+    address: 'Bilderdijkkade 25-H, Amsterdam-West',
+    coords: [52.3688, 4.8703],
     title: 'Café COOS',
     category: 'comida',
     price: 18,
@@ -603,6 +652,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'van-dobben',
+    address: 'Korte Reguliersdwarsstraat 5-9',
+    coords: [52.3662, 4.8946],
     title: 'Eetsalon Van Dobben (croquetas)',
     category: 'comida',
     price: 10,
@@ -615,6 +666,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'de-tros',
+    address: 'Linnaeusstraat 63H, Amsterdam-Oost',
+    coords: [52.3617, 4.9187],
     title: 'De Tros (cena)',
     category: 'comida',
     price: 30,
@@ -626,6 +679,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'booth-club',
+    address: 'Raamsteeg 2',
+    coords: [52.3695, 4.8901],
     title: 'Booth Club (fotomatón analógico)',
     category: 'ciudad',
     price: 6,
@@ -638,6 +693,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'millesime',
+    address: 'Leidsestraat 64-66',
+    coords: [52.3648, 4.8858],
     title: 'Millesime Collection (vintage de lujo)',
     category: 'ciudad',
     price: 0,
@@ -771,6 +828,8 @@ export const IDEAS: Idea[] = [
   },
   {
     id: 'dec-aeropuerto-tren',
+    address: 'Amsterdam Centraal',
+    coords: [52.3791, 4.9003],
     title: 'Del aeropuerto al centro en tren',
     category: 'logistica',
     price: 5.9,

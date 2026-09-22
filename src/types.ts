@@ -30,4 +30,14 @@ export interface Idea {
   needsBooking?: boolean
   /** Decisión de grupo (abonos, presupuesto), no una actividad. */
   decision?: boolean
+  /** Dirección de la calle, para poder llegar sin depender del mapa. */
+  address?: string
+  /** [lat, lng] para el marcador. */
+  coords?: [number, number]
+  /**
+   * true cuando solo conozco el barrio, no el portal exacto. El marcador se
+   * pinta hueco y se avisa: mejor decir "por aquí" que fingir precisión en un
+   * mapa que la gente va a seguir por la calle.
+   */
+  coordsApprox?: boolean
 }

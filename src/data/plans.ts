@@ -93,7 +93,7 @@ const VAN_GOGH: PlanSlot = {
 const DESAYUNO_VIERNES: PlanSlot = {
   time: '09:15',
   ideaId: 'pantopia',
-  note: 'Está junto al Rijksmuseum, a cinco minutos del Van Gogh.',
+  note: 'Kerkstraat 163, en la zona de canales. Son unos 12 minutos andando hasta el museo, así que salid con tiempo.',
 }
 
 /** La tarde del jueves por el centro, igual en los tres planes. */

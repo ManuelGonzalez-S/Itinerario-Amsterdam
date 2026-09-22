@@ -2,10 +2,27 @@ import type { Idea, TripDay } from '../types'
 import { IDEAS_BY_ID } from '../data/ideas'
 import { DAY_HOURS, DAY_NAMES, PLANS, type Plan, type PlanSlot } from '../data/plans'
 
-export const LETRAS = ['A', 'B', 'C']
+/**
+ * El plan que se va a hacer. Cambiar esta línea es lo único que hace falta
+ * para irse al de museos ('plan-museos') o al de Haarlem ('plan-escapada'):
+ * el itinerario, el mapa y el mensaje de WhatsApp se regeneran solos.
+ */
+export const PLAN_ELEGIDO = 'plan-consenso'
 
-/** Cuántos somos. */
-export const GROUP_SIZE = 4
+/** Un color por día. Es lo que ata el marcador del mapa con su hora. */
+export const DAY_COLOR: Record<TripDay, { hex: string; bg: string; text: string }> = {
+  jue24: { hex: '#f59e0b', bg: 'bg-amber-500', text: 'text-amber-300' },
+  vie25: { hex: '#38bdf8', bg: 'bg-sky-400', text: 'text-sky-300' },
+  sab26: { hex: '#a78bfa', bg: 'bg-violet-400', text: 'text-violet-300' },
+  dom27: { hex: '#34d399', bg: 'bg-emerald-400', text: 'text-emerald-300' },
+}
+
+export const DAY_SHORT: Record<TripDay, string> = {
+  jue24: 'Jue 24',
+  vie25: 'Vie 25',
+  sab26: 'Sáb 26',
+  dom27: 'Dom 27',
+}
 
 export function formatEuro(n: number): string {
   return n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
@@ -26,55 +43,109 @@ function slotHours(s: PlanSlot): number {
   return idea?.scheduleHours ?? idea?.hours ?? 0
 }
 
-export interface DaySummary {
+export function slotTitle(s: PlanSlot): string {
+  return s.label ?? slotIdea(s)?.title ?? '—'
+}
+
+/** Enlace a Google Maps. El marcador orienta; esto es lo que te lleva. */
+export function mapsUrl(s: PlanSlot): string | null {
+  const idea = slotIdea(s)
+  if (!idea?.address) return null
+  const query = `${idea.title}, ${idea.address}, Amsterdam`
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+}
+
+/** Una parada del itinerario: un hueco con hora y, si la tiene, su posición. */
+export interface Parada {
+  key: string
+  day: TripDay
+  /** Número dentro del día, el mismo que lleva el marcador del mapa. */
+  n: number
+  time: string
+  title: string
+  note?: string
+  price: number
+  ticket: boolean
+  idea?: Idea
+  coords?: [number, number]
+  approx: boolean
+  maps: string | null
+}
+
+export interface DiaItinerario {
   day: TripDay
   title: string
-  slots: PlanSlot[]
+  paradas: Parada[]
   cost: number
   hours: number
-  /** Horas disponibles de verdad ese día: el jueves se llega, el domingo hay vuelo. */
   available: number
 }
 
-export interface PlanSummary {
-  plan: Plan
-  letra: string
-  days: DaySummary[]
-  /** Euros por persona: entradas, comidas y transporte. Sin vuelos ni hotel. */
-  cost: number
-  hours: number
+function construir(plan: Plan): DiaItinerario[] {
+  return plan.days.map((d) => {
+    let n = 0
+    const paradas = d.slots.map((s, i): Parada => {
+      const idea = slotIdea(s)
+      // Solo se numera lo que va al mapa, para que el número del marcador y el
+      // de la lista sean siempre el mismo.
+      const coords = idea?.coords
+      if (coords) n++
+      return {
+        key: `${d.day}-${i}`,
+        day: d.day,
+        n: coords ? n : 0,
+        time: s.time,
+        title: slotTitle(s),
+        note: s.note,
+        price: slotPrice(s),
+        ticket: !!s.ticket,
+        idea,
+        coords,
+        approx: !!idea?.coordsApprox,
+        maps: mapsUrl(s),
+      }
+    })
+
+    return {
+      day: d.day,
+      title: d.title,
+      paradas,
+      cost: Math.round(d.slots.reduce((a, s) => a + slotPrice(s), 0)),
+      hours: Math.round(d.slots.reduce((a, s) => a + slotHours(s), 0) * 10) / 10,
+      available: DAY_HOURS[d.day],
+    }
+  })
 }
 
-export function summarize(plan: Plan, index: number): PlanSummary {
-  const days = plan.days.map((d) => ({
-    day: d.day,
-    title: d.title,
-    slots: d.slots,
-    cost: d.slots.reduce((a, s) => a + slotPrice(s), 0),
-    hours: Math.round(d.slots.reduce((a, s) => a + slotHours(s), 0) * 10) / 10,
-    available: DAY_HOURS[d.day],
-  }))
+const elegido = PLANS.find((p) => p.id === PLAN_ELEGIDO)
+if (!elegido) throw new Error(`El plan elegido (${PLAN_ELEGIDO}) no existe en PLANS`)
 
-  return {
-    plan,
-    letra: LETRAS[index] ?? String(index + 1),
-    days,
-    cost: Math.round(days.reduce((a, d) => a + d.cost, 0)),
-    hours: Math.round(days.reduce((a, d) => a + d.hours, 0) * 10) / 10,
-  }
-}
-
-export const PLAN_SUMMARIES: PlanSummary[] = PLANS.map(summarize)
+export const PLAN = elegido
+export const ITINERARIO: DiaItinerario[] = construir(elegido)
+export const COSTE_TOTAL = ITINERARIO.reduce((a, d) => a + d.cost, 0)
 
 export function daysUntilTrip(): number {
   const start = new Date('2026-09-24T00:00:00+02:00')
   return Math.ceil((start.getTime() - Date.now()) / 86_400_000)
 }
 
+/** Qué día del viaje es hoy, si es que ya estamos allí. */
+export function diaDeHoy(): TripDay | null {
+  const hoy = new Date()
+  if (hoy.getFullYear() !== 2026 || hoy.getMonth() !== 8) return null
+  const d = hoy.getDate()
+  if (d === 24) return 'jue24'
+  if (d === 25) return 'vie25'
+  if (d === 26) return 'sab26'
+  if (d === 27) return 'dom27'
+  return null
+}
+
 /* ───────────────────────── Texto para WhatsApp ───────────────────────── */
 
-/** Nombres cortos: en un móvil, "Copa en una azotea (SkyLounge, Canvas)" sobra. */
+/** Nombres cortos: en un móvil los títulos largos del catálogo sobran. */
 const CORTO: Record<string, string> = {
+  'dec-aeropuerto-tren': 'tren Schiphol → Centraal',
   'free-tour': 'free tour del centro',
   vleminckx: 'patatas de Vleminckx',
   'van-stapele': 'la cookie de Van Stapele',
@@ -82,89 +153,55 @@ const CORTO: Record<string, string> = {
   foodhallen: 'cena en Foodhallen',
   'barrio-rojo': 'Barrio Rojo de noche',
   coffeeshop: 'coffeeshop',
-  rooftop: 'copa en azotea',
   brunch: 'brunch',
   'albert-cuyp': 'mercado Albert Cuyp',
-  bici: 'bicis',
+  bici: 'alquilar bicis',
   vondelpark: 'Vondelpark',
   jordaan: 'Jordaan y las 9 Callecitas',
   'brown-cafe': 'brown cafés',
-  'ana-frank': 'ANA FRANK',
   ndsm: 'NDSM + festival (ferry gratis)',
   'adam-lookout': "A'DAM Lookout y el columpio",
   'brouwerij-ij': "cerveza en el molino 't IJ",
   'crucero-canales': 'crucero por los canales',
-  moco: 'MOCO (Banksy)',
-  'van-gogh': 'VAN GOGH (abre hasta las 21h)',
-  nemo: 'NEMO',
-  haarlem: 'HAARLEM (medio día)',
+  'van-gogh': 'VAN GOGH (reservado)',
   pantopia: 'desayuno en Pantopia',
   'saint-jean': 'café en Saint-Jean',
-  'cafe-coos': 'Café COOS',
-  brittons: 'Brittons',
   'van-dobben': 'croquetas de Van Dobben',
   'de-tros': 'cena en De Tros',
   'booth-club': 'fotomatón del Booth Club',
   millesime: 'vintage en Millesime',
-  'ruta-vintage': 'ruta vintage',
-}
-
-const DIA_CORTO: Record<TripDay, string> = {
-  jue24: 'Jue 24',
-  vie25: 'Vie 25',
-  sab26: 'Sáb 26',
-  dom27: 'Dom 27',
-}
-
-export function shortLabel(idea: Idea): string {
-  return CORTO[idea.id] ?? idea.title
+  moco: 'MOCO (Banksy)',
+  nemo: 'NEMO',
+  haarlem: 'HAARLEM (medio día)',
+  'cafe-coos': 'Café COOS',
 }
 
 /**
- * El mismo mensaje que muestra la página, en formato WhatsApp: negrita con
- * asteriscos y sin markdown. Se genera de los mismos datos para que no puedan
- * desviarse el uno del otro.
+ * El itinerario en formato WhatsApp: negrita con asteriscos y sin markdown.
+ * Sale de los mismos datos que la página, para que no puedan desviarse.
  */
-export function whatsappText(): string {
-  const dias = daysUntilTrip()
-
-  const cabecera = [
-    '*ÁMSTERDAM 24-27 SEPT · tres planes, elegid uno* 🚲',
+export function whatsappText(url = 'https://itinerario-amsterdam.vercel.app'): string {
+  const L: string[] = [
+    '*ÁMSTERDAM · nuestro itinerario* 🚲',
+    '_24 al 27 de septiembre_',
     '',
-    '✅ *Van Gogh reservado:* viernes 25 a las 11:15. Los tres planes se montan alrededor de esa hora.',
-    '❌ *Ana Frank:* sin entradas, se cae de los tres.',
-    '❌ *La copa en la azotea del jueves:* fuera.',
+    `Plan cerrado: *${PLAN.name}*. Unos ${COSTE_TOTAL} € por persona sin vuelos ni hotel, con entradas, comidas y transporte.`,
     '',
-    'Van también los sitios que pasasteis: Pantopia, Saint-Jean, Café COOS, Van Dobben, De Tros, el fotomatón del Booth Club y el vintage de Millesime. Precios por persona sin vuelos ni hotel, con entradas, comidas y transporte.',
-  ].join('\n')
+    '✅ Van Gogh reservado: *viernes 25 a las 11:15*',
+    '',
+  ]
 
-  const bloques = PLAN_SUMMARIES.map((s) => {
-    const L = [
-      `*PLAN ${s.letra} · ${s.plan.name}*`,
-      `${s.plan.tagline} — ${s.cost} €/persona`,
-      '',
-    ]
-    for (const d of s.days) {
-      const cosas = d.slots
-        .map(slotIdea)
-        .filter((i): i is Idea => !!i && !i.decision)
-        .map(shortLabel)
-      L.push(`*${DIA_CORTO[d.day]}:* ${cosas.join(' · ')}`)
+  for (const d of ITINERARIO) {
+    L.push(`*${DAY_NAMES[d.day].toUpperCase()} · ${d.title}*`)
+    for (const p of d.paradas) {
+      const nombre = p.idea ? (CORTO[p.idea.id] ?? p.idea.title) : p.title
+      L.push(`${p.time}  ${nombre}`)
     }
     L.push('')
-    L.push(`Se queda fuera: ${s.plan.tradeoffShort}`)
-    return L.join('\n')
-  })
+  }
 
-  const cierre = [
-    `*¿A, B o C?* Salimos en ${dias === 1 ? 'un día' : `${dias} días`}, así que decidid hoy y cierro lo que haga falta.`,
-    '',
-    'Lo único que quedaría por reservar es la cena del sábado en De Tros. Lo demás se hace sobre la marcha.',
-    '',
-    'Dos cosas de la lista se han quedado fuera porque no he podido confirmar dirección ni horarios: *Brittons* y las tiendas *Secondlife, Just Waldo y Love Storie Archive*. Si alguien las tiene localizadas, las metemos. La vintage que sí está confirmada es Millesime, en Leidsestraat.',
-  ].join('\n')
-
-  return [cabecera, ...bloques, cierre].join('\n\n———————————\n\n')
+  L.push(`Mapa con todos los sitios y sus direcciones: ${url}`)
+  return L.join('\n')
 }
 
-export { DAY_NAMES, DIA_CORTO }
+export { DAY_NAMES }
