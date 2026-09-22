@@ -2,6 +2,13 @@ import { useMemo, useState } from 'react'
 import type { TripDay } from './types'
 import { Mapa } from './components/Mapa'
 import {
+  distancia,
+  formatDistancia,
+  minutosAndando,
+  useUbicacion,
+  type Ubicacion,
+} from './hooks/useUbicacion'
+import {
   COSTE_TOTAL,
   DAY_COLOR,
   DAY_NAMES,
@@ -24,7 +31,9 @@ export default function App() {
   const [dia, setDia] = useState<TripDay | 'todo'>(hoy ?? 'jue24')
   const [activa, setActiva] = useState<string | null>(null)
   const [copia, setCopia] = useState<'no' | 'si' | 'fallo'>('no')
+  const [centrar, setCentrar] = useState(0)
   const dias = daysUntilTrip()
+  const geo = useUbicacion()
 
   const visibles = useMemo(
     () => (dia === 'todo' ? ITINERARIO : ITINERARIO.filter((d) => d.day === dia)),
@@ -117,10 +126,54 @@ export default function App() {
 
       {/* Mapa */}
       <div className="mt-4">
-        <Mapa paradas={paradas} activa={activa} onSelect={setActiva} />
+        <Mapa
+          paradas={paradas}
+          activa={activa}
+          onSelect={setActiva}
+          ubicacion={geo.ubicacion}
+          centrarEnMi={centrar}
+        />
+
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {geo.estado === 'activo' ? (
+            <>
+              <button
+                onClick={() => setCentrar((n) => n + 1)}
+                className="min-h-11 rounded-xl bg-sky-500/15 px-3.5 py-2 text-sm font-semibold text-sky-300 transition hover:bg-sky-500/25"
+              >
+                🎯 Centrar en mí
+              </button>
+              <button
+                onClick={geo.parar}
+                className="min-h-11 rounded-xl bg-white/5 px-3.5 py-2 text-sm text-slate-400 transition hover:bg-white/10"
+              >
+                Dejar de seguirme
+              </button>
+              {geo.ubicacion && (
+                <span className="text-xs text-slate-500">
+                  Precisión ±{Math.round(geo.ubicacion.precision)} m
+                </span>
+              )}
+            </>
+          ) : (
+            <button
+              onClick={geo.arrancar}
+              disabled={geo.estado === 'buscando'}
+              className="min-h-11 rounded-xl bg-sky-500/15 px-3.5 py-2 text-sm font-semibold text-sky-300 transition hover:bg-sky-500/25 disabled:opacity-60"
+            >
+              {geo.estado === 'buscando' ? '📍 Buscándote…' : '📍 Ver dónde estoy'}
+            </button>
+          )}
+        </div>
+
+        {geo.error && (
+          <p className="mt-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-xs leading-relaxed text-amber-200">
+            {geo.error}
+          </p>
+        )}
         <p className="mt-2 text-xs leading-relaxed text-slate-500">
-          Toca un número, en el mapa o en la lista, para localizarlo. Los marcadores orientan; el
-          enlace «Cómo llegar» de cada parada abre Google Maps, que es lo que te lleva de verdad.
+          Toca un número, en el mapa o en la lista, para localizarlo. Los marcadores orientan; los
+          botones de cada parada abren la ruta en Google Maps desde donde estés.
           {aproximadas > 0 && (
             <> Los marcadores de borde discontinuo son aproximados: de esos solo conozco el barrio.</>
           )}
@@ -148,6 +201,7 @@ export default function App() {
                   key={p.key}
                   parada={p}
                   activa={activa === p.key}
+                  ubicacion={geo.ubicacion}
                   onSelect={() => setActiva(activa === p.key ? null : p.key)}
                 />
               ))}
@@ -232,14 +286,18 @@ export default function App() {
 function ParadaFila({
   parada,
   activa,
+  ubicacion,
   onSelect,
 }: {
   parada: Parada
   activa: boolean
+  ubicacion: Ubicacion | null
   onSelect: () => void
 }) {
   const c = DAY_COLOR[parada.day]
-  const tieneDetalle = !!(parada.note || parada.idea?.address || parada.maps)
+  const tieneDetalle = !!(parada.note || parada.idea?.address || parada.andando)
+  const metros =
+    ubicacion && parada.coords ? distancia(ubicacion.coords, parada.coords) : null
 
   return (
     <li
@@ -272,12 +330,18 @@ function ParadaFila({
 
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-medium text-white">{parada.title}</span>
-          {(parada.price > 0 || parada.ticket) && (
+          {(parada.price > 0 || parada.ticket || metros !== null) && (
             <span className="mt-0.5 block text-xs text-slate-500">
               {parada.price > 0 && formatEuro(parada.price)}
               {parada.ticket && (
                 <span className="ml-1.5 rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-medium text-sky-300">
                   entrada
+                </span>
+              )}
+              {metros !== null && (
+                <span className="ml-1.5 text-sky-300">
+                  · a {formatDistancia(metros)}
+                  {metros < 3000 && ` (${minutosAndando(metros)} min andando)`}
                 </span>
               )}
             </span>
@@ -300,15 +364,25 @@ function ParadaFila({
             </p>
           )}
           {parada.note && <p className="text-xs leading-relaxed text-slate-500">{parada.note}</p>}
-          <div className="flex flex-wrap gap-3 pt-0.5">
-            {parada.maps && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {parada.andando && (
               <a
-                href={parada.maps}
+                href={parada.andando}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs font-medium text-sky-300 hover:text-sky-200"
+                className="min-h-9 rounded-lg bg-sky-500/15 px-3 py-1.5 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/25"
               >
-                Cómo llegar ↗
+                🚶 Andando
+              </a>
+            )}
+            {parada.transporte && (
+              <a
+                href={parada.transporte}
+                target="_blank"
+                rel="noreferrer"
+                className="min-h-9 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10"
+              >
+                🚇 En transporte
               </a>
             )}
             {parada.idea?.url && (
@@ -316,7 +390,7 @@ function ParadaFila({
                 href={parada.idea.url}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs font-medium text-sky-300 hover:text-sky-200"
+                className="min-h-9 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10"
               >
                 Web oficial ↗
               </a>

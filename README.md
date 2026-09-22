@@ -33,6 +33,12 @@ hubiera pedido. Moco, NEMO y Haarlem se quedaron los tres en cero síes y cuatro
   orienta; el enlace es el que lleva.
 - El botón de abajo copia el itinerario entero en formato WhatsApp, generado de los mismos datos
   para que no puedan desviarse.
+- **Dónde estás**: el botón de ubicación pinta tu punto en el mapa con su halo de precisión y
+  añade a cada parada la distancia y los minutos andando. No se pide el permiso al cargar, solo
+  cuando se pulsa: soltar el aviso de permisos nada más entrar es de mala educación y el navegador
+  recuerda un «no» dado a la ligera.
+- **Cómo llegar**: cada parada abre la ruta en Google Maps desde donde estés, andando o en
+  transporte público, que en Ámsterdam significa tranvías y ferris.
 
 Si el viaje ya ha empezado, la página abre directamente por el día que toca.
 

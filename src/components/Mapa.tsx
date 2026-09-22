@@ -2,12 +2,17 @@ import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { DAY_COLOR, type Parada } from '../lib/plan'
+import type { Ubicacion } from '../hooks/useUbicacion'
 
 interface Props {
   paradas: Parada[]
   /** La parada resaltada, para volar hasta ella al tocarla en la lista. */
   activa: string | null
   onSelect: (key: string | null) => void
+  /** Dónde está el usuario, si ha dado permiso. */
+  ubicacion: Ubicacion | null
+  /** Sube de valor cada vez que se pulsa "centrar en mí". */
+  centrarEnMi: number
 }
 
 /**
@@ -18,11 +23,12 @@ interface Props {
  * HTML propio, lo que además evita el clásico problema de las imágenes de
  * marcador de Leaflet con los bundlers y permite darles color.
  */
-export function Mapa({ paradas, activa, onSelect }: Props) {
+export function Mapa({ paradas, activa, onSelect, ubicacion, centrarEnMi }: Props) {
   const contenedor = useRef<HTMLDivElement>(null)
   const mapa = useRef<L.Map | null>(null)
   const capa = useRef<L.LayerGroup | null>(null)
   const marcadores = useRef<Map<string, L.Marker>>(new Map())
+  const yo = useRef<{ punto: L.Marker; halo: L.Circle } | null>(null)
 
   // Crear el mapa una sola vez
   useEffect(() => {
@@ -48,6 +54,7 @@ export function Mapa({ paradas, activa, onSelect }: Props) {
       mapa.current = null
       capa.current = null
       marcadores.current.clear()
+      yo.current = null
     }
   }, [])
 
@@ -86,7 +93,12 @@ export function Mapa({ paradas, activa, onSelect }: Props) {
           `<strong>${p.time} · ${p.title}</strong>` +
             (p.idea?.address ? `<br>${p.idea.address}` : '') +
             (p.approx ? '<br><em>Posición aproximada</em>' : '') +
-            (p.maps ? `<br><a href="${p.maps}" target="_blank" rel="noreferrer">Abrir en Google Maps ↗</a>` : ''),
+            (p.andando
+              ? `<br><a href="${p.andando}" target="_blank" rel="noreferrer">🚶 Andando</a>`
+              : '') +
+            (p.transporte
+              ? ` · <a href="${p.transporte}" target="_blank" rel="noreferrer">🚇 Transporte</a>`
+              : ''),
         )
         .on('click', () => onSelect(p.key))
 
@@ -99,6 +111,58 @@ export function Mapa({ paradas, activa, onSelect }: Props) {
     const bounds = L.latLngBounds(conCoords.map((p) => p.coords!))
     m.fitBounds(bounds, { padding: [36, 36], maxZoom: 15 })
   }, [paradas, onSelect])
+
+  // Dónde estoy: punto azul con su halo de precisión, como en cualquier mapa
+  useEffect(() => {
+    const m = mapa.current
+    if (!m) return
+
+    if (!ubicacion) {
+      if (yo.current) {
+        yo.current.punto.remove()
+        yo.current.halo.remove()
+        yo.current = null
+      }
+      return
+    }
+
+    const { coords, precision } = ubicacion
+
+    if (!yo.current) {
+      const icono = L.divIcon({
+        className: '',
+        html: `<div style="
+            width:18px;height:18px;border-radius:9999px;
+            background:#2563eb;border:3px solid #fff;
+            box-shadow:0 0 0 2px rgba(37,99,235,.35), 0 2px 8px rgba(0,0,0,.5);
+          "></div>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+      })
+      yo.current = {
+        // zIndexOffset alto: el punto propio siempre por encima de las paradas.
+        punto: L.marker(coords, { icon: icono, zIndexOffset: 1000 })
+          .addTo(m)
+          .bindPopup('Estás aquí'),
+        halo: L.circle(coords, {
+          radius: precision,
+          color: '#2563eb',
+          fillColor: '#2563eb',
+          fillOpacity: 0.12,
+          weight: 1,
+        }).addTo(m),
+      }
+    } else {
+      yo.current.punto.setLatLng(coords)
+      yo.current.halo.setLatLng(coords).setRadius(precision)
+    }
+  }, [ubicacion])
+
+  // Centrar en mí cuando se pulsa el botón
+  useEffect(() => {
+    if (centrarEnMi === 0 || !mapa.current || !ubicacion) return
+    mapa.current.flyTo(ubicacion.coords, 16, { duration: 0.6 })
+  }, [centrarEnMi, ubicacion])
 
   // Volar a la parada seleccionada desde la lista
   useEffect(() => {

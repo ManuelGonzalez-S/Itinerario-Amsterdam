@@ -47,12 +47,25 @@ export function slotTitle(s: PlanSlot): string {
   return s.label ?? slotIdea(s)?.title ?? '—'
 }
 
-/** Enlace a Google Maps. El marcador orienta; esto es lo que te lleva. */
-export function mapsUrl(s: PlanSlot): string | null {
+/**
+ * Enlaces de "cómo llegar". Sin parámetro de origen, Google Maps usa la
+ * posición de quien abre el enlace, así que sale la ruta desde donde estés.
+ * El marcador del mapa orienta; esto es lo que te lleva.
+ */
+export function comoLlegar(
+  s: PlanSlot,
+  modo: 'walking' | 'transit',
+): string | null {
   const idea = slotIdea(s)
   if (!idea?.address) return null
-  const query = `${idea.title}, ${idea.address}, Amsterdam`
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+  const destino = idea.coords
+    ? `${idea.coords[0]},${idea.coords[1]}`
+    : `${idea.title}, ${idea.address}, Amsterdam`
+  return (
+    'https://www.google.com/maps/dir/?api=1' +
+    `&destination=${encodeURIComponent(destino)}` +
+    `&travelmode=${modo}`
+  )
 }
 
 /** Una parada del itinerario: un hueco con hora y, si la tiene, su posición. */
@@ -69,7 +82,10 @@ export interface Parada {
   idea?: Idea
   coords?: [number, number]
   approx: boolean
-  maps: string | null
+  /** Ruta andando desde donde esté el usuario. */
+  andando: string | null
+  /** Ruta en transporte público: en Ámsterdam hay tranvías y ferris de por medio. */
+  transporte: string | null
 }
 
 export interface DiaItinerario {
@@ -102,7 +118,8 @@ function construir(plan: Plan): DiaItinerario[] {
         idea,
         coords,
         approx: !!idea?.coordsApprox,
-        maps: mapsUrl(s),
+        andando: comoLlegar(s, 'walking'),
+        transporte: comoLlegar(s, 'transit'),
       }
     })
 
