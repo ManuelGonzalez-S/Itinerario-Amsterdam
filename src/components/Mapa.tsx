@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { DAY_COLOR, type Parada } from '../lib/plan'
@@ -29,6 +29,8 @@ export function Mapa({ paradas, activa, onSelect, ubicacion, centrarEnMi }: Prop
   const capa = useRef<L.LayerGroup | null>(null)
   const marcadores = useRef<Map<string, L.Marker>>(new Map())
   const yo = useRef<{ punto: L.Marker; halo: L.Circle } | null>(null)
+  const [pista, setPista] = useState(false)
+  const [grande, setGrande] = useState(false)
 
   // Crear el mapa una sola vez
   useEffect(() => {
@@ -49,7 +51,29 @@ export function Mapa({ paradas, activa, onSelect, ubicacion, centrarEnMi }: Prop
     capa.current = L.layerGroup().addTo(m)
     mapa.current = m
 
+    // La rueda hace zoom solo con Ctrl (o Cmd), como en los mapas incrustados
+    // de Google. Sin esto, bajar por la página sobre el mapa lo desbarataba.
+    // En móvil no aplica: ahí el pellizco funciona siempre.
+    let ocultar: number | undefined
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault()
+        // Con la API pública, no con los internos de Leaflet: setZoomAround
+        // amplía hacia donde apunta el cursor, que es lo que se espera.
+        const punto = m.mouseEventToLatLng(e)
+        m.setZoomAround(punto, m.getZoom() + (e.deltaY < 0 ? 1 : -1))
+      } else {
+        setPista(true)
+        window.clearTimeout(ocultar)
+        ocultar = window.setTimeout(() => setPista(false), 1600)
+      }
+    }
+    const el = m.getContainer()
+    el.addEventListener('wheel', onWheel, { passive: false })
+
     return () => {
+      el.removeEventListener('wheel', onWheel)
+      window.clearTimeout(ocultar)
       m.remove()
       mapa.current = null
       capa.current = null
@@ -164,6 +188,14 @@ export function Mapa({ paradas, activa, onSelect, ubicacion, centrarEnMi }: Prop
     mapa.current.flyTo(ubicacion.coords, 16, { duration: 0.6 })
   }, [centrarEnMi, ubicacion])
 
+  // Leaflet no se entera solo de que el contenedor ha cambiado de alto
+  useEffect(() => {
+    const m = mapa.current
+    if (!m) return
+    const t = window.setTimeout(() => m.invalidateSize(), 220)
+    return () => window.clearTimeout(t)
+  }, [grande])
+
   // Volar a la parada seleccionada desde la lista
   useEffect(() => {
     if (!activa || !mapa.current) return
@@ -174,13 +206,33 @@ export function Mapa({ paradas, activa, onSelect, ubicacion, centrarEnMi }: Prop
   }, [activa])
 
   return (
-    <div
-      ref={contenedor}
-      className="h-72 w-full rounded-2xl border border-white/10 sm:h-96"
-      // Leaflet pinta sus controles con z-index altos; lo acotamos para que no
-      // se cuele por encima de nada del resto de la página.
-      style={{ zIndex: 0, background: '#0f172a' }}
-      aria-label="Mapa del itinerario"
-    />
+    <div className="relative">
+      <div
+        ref={contenedor}
+        className={`w-full rounded-2xl border border-white/10 transition-[height] ${
+          grande ? 'h-[70vh]' : 'h-72 sm:h-96'
+        }`}
+        // Leaflet pinta sus controles con z-index altos; lo acotamos para que
+        // no se cuele por encima de nada del resto de la página.
+        style={{ zIndex: 0, background: '#0f172a' }}
+        aria-label="Mapa del itinerario"
+      />
+
+      <button
+        onClick={() => setGrande((g) => !g)}
+        className="absolute top-3 right-3 z-[400] min-h-9 rounded-lg bg-slate-950/80 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur transition hover:bg-slate-950"
+      >
+        {grande ? '↙ Reducir' : '↗ Agrandar'}
+      </button>
+
+      {pista && (
+        <div className="pointer-events-none absolute inset-0 z-[400] grid place-items-center rounded-2xl bg-slate-950/60">
+          <p className="rounded-xl bg-slate-950/90 px-4 py-2.5 text-sm font-medium text-slate-200">
+            Usa <kbd className="rounded bg-white/10 px-1.5 py-0.5">Ctrl</kbd> + rueda para hacer
+            zoom
+          </p>
+        </div>
+      )}
+    </div>
   )
 }
